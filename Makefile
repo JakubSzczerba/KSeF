@@ -42,3 +42,10 @@ phpstan:
 
 csfixer:
 	docker compose exec php ./vendor/bin/php-cs-fixer fix --dry-run --dif
+
+#debug
+challenge:
+	docker compose exec php php bin/console ksef:test --step=challenge
+
+auth:
+	docker compose exec php php bin/console ksef:test --step=auth
