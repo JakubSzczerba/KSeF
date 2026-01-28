@@ -22,6 +22,10 @@ services:
       APP_ENV: "dev"
       APP_SECRET: "your_app_secret"
       APP_HOSTNAME: "ksef.local"
+      KSEF_NIP: "your_nip"
+      KSEF_TOKEN: "your_token"
+      KSEF_CERTIFICATE_PATH: "/var/www/ksef/config/certificates/your_cert_name.p12"
+      KSEF_CERTIFICATE_PASSWORD: "your_cert_password"
   nginx:
     image: nginx:1.27-alpine
     ports:
