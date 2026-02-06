@@ -1,5 +1,6 @@
 parameters:
     ksef.nip: '%env(KSEF_NIP)%'
+    ksef.token: '%env(KSEF_TOKEN)%'
     ksef.certificate_path: '%env(KSEF_CERTIFICATE_PATH)%'
     ksef.certificate_password: '%env(KSEF_CERTIFICATE_PASSWORD)%'
 
@@ -15,5 +16,6 @@ services:
         arguments:
             $httpClient: '@http_client'
             $ksefNip: '%ksef.nip%'
+            $ksefToken: '%ksef.token%'
             $certificatePath: '%ksef.certificate_path%'
             $certificatePassword: '%ksef.certificate_password%'
