@@ -37,6 +37,9 @@ migration-status:
 make-migration:
 	docker compose exec php php bin/console make:migration
 
+router:
+	docker compose exec php php bin/console debug:router
+
 phpstan:
 	docker compose exec php ./vendor/bin/phpstan analyse -l 10 -c phpstan.neon --memory-limit=512M
 
