@@ -5,6 +5,8 @@
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
+/config/certificates/*.crt
+/config/certificates/*.key
 /public/bundles/
 /var/
 /vendor/
