@@ -7,6 +7,7 @@
 /config/secrets/prod/prod.decrypt.private.php
 /config/certificates/*.crt
 /config/certificates/*.key
+/docs/sample-invoice.xml
 /public/bundles/
 /var/
 /vendor/
