@@ -14,7 +14,7 @@ logs:
 	docker compose logs -f
 
 php bash:
-	docker-compose exec php bash
+	docker compose exec php bash
 
 tests:
 	docker compose exec php php bin/phpunit
@@ -22,33 +22,14 @@ tests:
 composer install:
 	docker compose exec php composer install
 
-fixtures:
-	docker compose exec php php bin/console doctrine:fixtures:load --no-interaction
-
 cc:
 	docker compose exec php php bin/console cache:clear
-
-migrate:
-	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
-
-migration-status:
-	docker compose exec php php bin/console doctrine:migrations:status
-
-make-migration:
-	docker compose exec php php bin/console make:migration
 
 router:
 	docker compose exec php php bin/console debug:router
 
 phpstan:
-	docker compose exec php ./vendor/bin/phpstan analyse -l 10 -c phpstan.neon --memory-limit=512M
+	docker compose exec php ./vendor/bin/phpstan analyse -l 8 -c phpstan.neon --memory-limit=512M
 
 csfixer:
 	docker compose exec php ./vendor/bin/php-cs-fixer fix --dry-run --dif
-
-#debug
-challenge:
-	docker compose exec php php bin/console ksef:test --step=challenge
-
-auth:
-	docker compose exec php php bin/console ksef:test --step=auth
