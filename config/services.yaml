@@ -31,6 +31,8 @@ services:
             $certificateKeyPath: '%ksef.certificate_key_path%'
             $certificatePassword: '%ksef.certificate_password%'
 
+    Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface: '@Ksef\Backend\Authentication\Application\AuthenticateHandler'
+
     Ksef\Backend\Authentication\Application\AuthenticateHandler:
         arguments:
             $ksefNip: '%ksef.nip%'
