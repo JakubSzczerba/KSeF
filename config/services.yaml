@@ -12,10 +12,25 @@ services:
     Ksef\:
         resource: '../src/'
 
-    Ksef\Api\KsefApiService:
+    Ksef\Backend\Shared\Application\Contract\KsefApi: '@Ksef\Backend\Shared\Infrastructure\Api\KsefApiClient'
+
+    Ksef\Backend\Shared\Infrastructure\Api\KsefApiClient:
         arguments:
-            $httpClient: '@http_client'
+            $apiUrl: '%env(KSEF_API_URL)%'
+    Ksef\Backend\Authentication\Application\Contract\AuthChallengeSigner: '@Ksef\Backend\Authentication\Infrastructure\Signing\XadesAuthChallengeSigner'
+    Ksef\Backend\Invoice\Application\Contract\InvoiceEncryptor: '@Ksef\Backend\Invoice\Infrastructure\Encryption\OpenSslInvoiceEncryptor'
+
+    Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    Ksef\Backend\Authentication\Infrastructure\Signing\XadesAuthChallengeSigner:
+        arguments:
             $ksefNip: '%ksef.nip%'
             $certificatePath: '%ksef.certificate_path%'
             $certificateKeyPath: '%ksef.certificate_key_path%'
             $certificatePassword: '%ksef.certificate_password%'
+
+    Ksef\Backend\Authentication\Application\AuthenticateHandler:
+        arguments:
+            $ksefNip: '%ksef.nip%'
