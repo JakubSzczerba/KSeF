@@ -13,6 +13,8 @@ use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
 use Ksef\Backend\Shared\Application\Contract\KsefApi;
 use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
 use Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Throwable;
 
 final class GetInvoiceOverviewHandler
@@ -22,10 +24,13 @@ final class GetInvoiceOverviewHandler
     private const INVOICE_PAGE_SIZE = 100;
     private const INVOICE_PAGE_LIMIT = 10;
 
+    private const CACHE_KEY = 'ksef_invoice_overview';
+
     public function __construct(
         private readonly SubmittedInvoiceRepository $submittedInvoiceRepository,
         private readonly KsefApi $ksefApi,
-        private readonly TokenRefreshingExecutor $tokenRefreshingExecutor
+        private readonly TokenRefreshingExecutor $tokenRefreshingExecutor,
+        private readonly CacheInterface $ksefInvoiceOverviewCache
     ) {}
 
     /**
@@ -40,13 +45,29 @@ final class GetInvoiceOverviewHandler
      *   sessionStatusCode:int|null
      * }>
      */
+    /**
+     * @return list<array{sessionReferenceNumber:string,invoiceReferenceNumber:string,ksefNumber:string,invoiceNumber:string,submittedAt:string,invoiceStatusCode:int|null,invoiceStatusDescription:string,sessionStatusCode:int|null}>
+     */
     public function provide(): array
     {
-        $accessToken = $this->tokenRefreshingExecutor->getValidToken();
-        $rows = $this->fetchRowsFromKsef($accessToken->value);
-        $rows = $this->mergeWithLocalRows($rows, $accessToken->value);
+        /** @var list<array{sessionReferenceNumber:string,invoiceReferenceNumber:string,ksefNumber:string,invoiceNumber:string,submittedAt:string,invoiceStatusCode:int|null,invoiceStatusDescription:string,sessionStatusCode:int|null}> $result */
+        $result = $this->ksefInvoiceOverviewCache->get(
+            self::CACHE_KEY,
+            function (ItemInterface $item): array {
+                $item->expiresAfter(30);
+                $accessToken = $this->tokenRefreshingExecutor->getValidToken();
+                $rows = $this->fetchRowsFromKsef($accessToken->value);
 
-        return $rows;
+                return $this->mergeWithLocalRows($rows, $accessToken->value);
+            }
+        );
+
+        return $result;
+    }
+
+    public function invalidate(): void
+    {
+        $this->ksefInvoiceOverviewCache->delete(self::CACHE_KEY);
     }
 
     /**

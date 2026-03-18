@@ -43,3 +43,7 @@ services:
     Ksef\Backend\Invoice\Application\SendInvoiceHandler:
         arguments:
             $logger: '@monolog.logger.ksef'
+
+    Ksef\Frontend\Dashboard\Application\GetInvoiceOverview\GetInvoiceOverviewHandler:
+        arguments:
+            $ksefInvoiceOverviewCache: '@cache.ksef_invoice_overview'

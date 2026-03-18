@@ -14,6 +14,7 @@ use DateTimeInterface;
 use Ksef\Backend\Invoice\Application\SendInvoiceCommand;
 use Ksef\Backend\Invoice\Application\SendInvoiceHandler;
 use Ksef\Backend\Parser\Application\Fa3StructuredInvoiceParser;
+use Ksef\Frontend\Dashboard\Application\GetInvoiceOverview\GetInvoiceOverviewHandler;
 use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
 use Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository;
 use Ksef\Frontend\Shared\Exception\FrontendRequestException;
@@ -29,7 +30,8 @@ final class SendInvoiceAction
     public function __construct(
         private readonly SendInvoiceHandler $sendInvoiceHandler,
         private readonly Fa3StructuredInvoiceParser $fa3StructuredInvoiceParser,
-        private readonly SubmittedInvoiceRepository $submittedInvoiceRepository
+        private readonly SubmittedInvoiceRepository $submittedInvoiceRepository,
+        private readonly GetInvoiceOverviewHandler $getInvoiceOverviewHandler
     ) {}
 
     #[Route(path: '/send', name: 'frontend_invoice_send', methods: ['POST'])]
@@ -56,6 +58,8 @@ final class SendInvoiceAction
                     (new DateTimeImmutable())->format(DateTimeInterface::ATOM)
                 )
             );
+
+            $this->getInvoiceOverviewHandler->invalidate();
 
             return new JsonResponse([
                 'ok' => true,
