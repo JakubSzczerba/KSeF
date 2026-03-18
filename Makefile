@@ -1,3 +1,5 @@
+.PHONY: start up down rebuild logs tests cc router phpstan csfixer
+
 start: up composer
 	@echo "✅ Project is ready!"
 
