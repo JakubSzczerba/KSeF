@@ -30,6 +30,7 @@ services:
             $certificatePath: '%ksef.certificate_path%'
             $certificateKeyPath: '%ksef.certificate_key_path%'
             $certificatePassword: '%ksef.certificate_password%'
+            $logger: '@monolog.logger.ksef'
 
     Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface: '@Ksef\Backend\Authentication\Application\AuthenticateHandler'
     Ksef\Backend\Authentication\Application\Contract\AccessTokenStoreInterface: '@Ksef\Backend\Authentication\Infrastructure\Store\SessionAccessTokenStore'
@@ -37,3 +38,8 @@ services:
     Ksef\Backend\Authentication\Application\AuthenticateHandler:
         arguments:
             $ksefNip: '%ksef.nip%'
+            $logger: '@monolog.logger.ksef'
+
+    Ksef\Backend\Invoice\Application\SendInvoiceHandler:
+        arguments:
+            $logger: '@monolog.logger.ksef'

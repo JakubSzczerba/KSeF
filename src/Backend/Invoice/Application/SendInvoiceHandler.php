@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Ksef\Backend\Invoice\Application;
 
 use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
+use Psr\Log\LoggerInterface;
 use Ksef\Backend\Invoice\Application\Contract\InvoiceEncryptor;
 use Ksef\Backend\Invoice\Domain\InvoiceSubmission;
 use Ksef\Backend\Invoice\Domain\ValueObject\FormCode;
@@ -40,7 +41,8 @@ final class SendInvoiceHandler
         private readonly KsefApi $ksefApi,
         private readonly InvoiceEncryptor $invoiceEncryptor,
         private readonly TokenRefreshingExecutor $tokenRefreshingExecutor,
-        private readonly KsefStatusPoller $statusPoller
+        private readonly KsefStatusPoller $statusPoller,
+        private readonly LoggerInterface $logger
     ) {}
 
     public function execute(SendInvoiceCommand $command): InvoiceSubmission
@@ -50,6 +52,8 @@ final class SendInvoiceHandler
         }
 
         $accessToken = $this->tokenRefreshingExecutor->getValidToken();
+        $this->logger->info('KSeF invoice: starting invoice submission');
+
         $formCode = new FormCode($command->formSystemCode, $command->formSchemaVersion, $command->formValue);
 
         $sessionEncryptionData = $this->invoiceEncryptor->createSessionEncryptionData();
@@ -70,6 +74,7 @@ final class SendInvoiceHandler
             throw new IntegrationResponseException('Brak numeru referencyjnego sesji po otwarciu /sessions/online.');
         }
         $sessionReference = new SessionReferenceNumber($sessionReferenceNumber);
+        $this->logger->debug('KSeF invoice: session opened', ['sessionRef' => $sessionReferenceNumber]);
 
         $encryptedInvoice = $this->invoiceEncryptor->encryptInvoice($command->invoiceXml, $sessionEncryptionData);
         $sendInvoiceResponse = $this->ksefApi->sendInvoice($accessToken->value, $sessionReference->value, [
@@ -86,17 +91,28 @@ final class SendInvoiceHandler
             throw new IntegrationResponseException('Brak numeru referencyjnego faktury po wysyłce.');
         }
         $invoiceReference = new InvoiceReferenceNumber($invoiceReferenceNumber);
+        $this->logger->debug('KSeF invoice: invoice sent', ['invoiceRef' => $invoiceReferenceNumber]);
 
         $closeError = null;
         try {
             $this->ksefApi->closeOnlineSession($accessToken->value, $sessionReference->value);
         } catch (Throwable $e) {
             $closeError = $e->getMessage();
+            $this->logger->warning('KSeF invoice: error closing session', ['sessionRef' => $sessionReference->value, 'error' => $closeError]);
         }
 
         $invoiceStatus = $this->waitForInvoiceStatus($accessToken->value, $sessionReference->value, $invoiceReference->value);
         $this->ensureInvoiceSucceeded($invoiceStatus, $sessionReference->value, $invoiceReference->value);
         $sessionStatus = $this->waitForSessionStatus($accessToken->value, $sessionReference->value);
+
+        $invoiceStatusCode = (int) ($invoiceStatus['status']['code'] ?? 0);
+        $sessionStatusCode = (int) ($sessionStatus['status']['code'] ?? 0);
+        $this->logger->info('KSeF invoice: submission complete', [
+            'sessionRef' => $sessionReference->value,
+            'invoiceRef' => $invoiceReference->value,
+            'invoiceStatusCode' => $invoiceStatusCode,
+            'sessionStatusCode' => $sessionStatusCode,
+        ]);
 
         return new InvoiceSubmission(
             $sessionReference,

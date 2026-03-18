@@ -21,6 +21,7 @@ use Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterfac
 use Ksef\Backend\Shared\Application\Exception\AuthenticationFailedException;
 use Ksef\Backend\Shared\Application\Exception\IntegrationResponseException;
 use Ksef\Backend\Shared\Application\KsefStatusPoller;
+use Psr\Log\LoggerInterface;
 
 final class AuthenticateHandler implements AuthenticateHandlerInterface
 {
@@ -37,17 +38,21 @@ final class AuthenticateHandler implements AuthenticateHandlerInterface
         private readonly AuthChallengeSigner $authChallengeSigner,
         private readonly AccessTokenStoreInterface $accessTokenStore,
         private readonly KsefStatusPoller $statusPoller,
+        private readonly LoggerInterface $logger,
         private readonly string $ksefNip
     ) {}
 
     public function execute(): AuthenticationSession
     {
         $nip = new KsefNip($this->ksefNip);
+        $this->logger->info('KSeF auth: starting authentication', ['nip' => $nip->value]);
+
         $challengeData = $this->ksefApi->requestAuthChallenge($nip->value);
         $challenge = (string) ($challengeData['challenge'] ?? '');
         if ($challenge === '') {
             throw new IntegrationResponseException('Brak challenge w odpowiedzi API KSeF.');
         }
+        $this->logger->debug('KSeF auth: challenge received');
 
         $signedXml = $this->authChallengeSigner->signChallenge($challenge);
         $initAuthData = $this->ksefApi->initXadesSignatureAuthentication($signedXml);
@@ -60,7 +65,13 @@ final class AuthenticateHandler implements AuthenticateHandlerInterface
 
         $authenticationReferenceNumber = new AuthenticationReferenceNumber($referenceNumber);
         $sessionToken = new AuthenticationToken($authenticationToken);
-        $this->waitForAuthentication($authenticationReferenceNumber, $sessionToken);
+
+        try {
+            $this->waitForAuthentication($authenticationReferenceNumber, $sessionToken);
+        } catch (AuthenticationFailedException $e) {
+            $this->logger->error('KSeF auth: authentication failed', ['error' => $e->getMessage()]);
+            throw $e;
+        }
 
         $tokens = $this->ksefApi->redeemAuthenticationToken($sessionToken->value);
         $accessToken = (string) ($tokens['accessToken']['token'] ?? '');
@@ -70,6 +81,8 @@ final class AuthenticateHandler implements AuthenticateHandlerInterface
 
         $authenticationAccessToken = new AccessToken($accessToken);
         $this->accessTokenStore->set($authenticationAccessToken);
+
+        $this->logger->info('KSeF auth: authentication successful', ['referenceNumber' => $referenceNumber]);
 
         return new AuthenticationSession($authenticationReferenceNumber, $sessionToken, $authenticationAccessToken);
     }

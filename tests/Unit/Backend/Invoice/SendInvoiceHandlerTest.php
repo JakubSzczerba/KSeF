@@ -26,6 +26,7 @@ use Ksef\Backend\Shared\Application\Exception\IntegrationResponseException;
 use Ksef\Backend\Shared\Application\KsefStatusPoller;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 final class SendInvoiceHandlerTest extends TestCase
 {
@@ -58,7 +59,7 @@ final class SendInvoiceHandlerTest extends TestCase
         ]);
         $api->expects(self::never())->method('getSessionStatus');
 
-        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0));
+        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0), $this->createMock(LoggerInterface::class));
 
         $this->expectException(IntegrationResponseException::class);
         $this->expectExceptionMessageMatches('/450.*Pole P_1 ma nieprawidłowy format\./');
@@ -91,7 +92,7 @@ final class SendInvoiceHandlerTest extends TestCase
 
         $authHandler->expects(self::never())->method('execute');
 
-        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0));
+        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0), $this->createMock(LoggerInterface::class));
 
         $result = $handler->execute(new SendInvoiceCommand('<xml/>'));
 
@@ -129,7 +130,7 @@ final class SendInvoiceHandlerTest extends TestCase
         $api->expects(self::once())->method('getSessionInvoiceStatus')->willReturn(['status' => ['code' => 200]]);
         $api->expects(self::once())->method('getSessionStatus')->willReturn(['status' => ['code' => 200]]);
 
-        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0));
+        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0), $this->createMock(LoggerInterface::class));
 
         $handler->execute(new SendInvoiceCommand('<xml/>'));
     }
