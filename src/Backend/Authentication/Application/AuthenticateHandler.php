@@ -16,6 +16,7 @@ use Ksef\Backend\Authentication\Domain\ValueObject\AuthenticationReferenceNumber
 use Ksef\Backend\Authentication\Domain\ValueObject\AuthenticationToken;
 use Ksef\Backend\Authentication\Domain\ValueObject\KsefNip;
 use Ksef\Backend\Shared\Application\Contract\KsefApi;
+use Ksef\Backend\Authentication\Application\Contract\AccessTokenStoreInterface;
 use Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface;
 use Ksef\Backend\Shared\Application\Exception\AuthenticationFailedException;
 use Ksef\Backend\Shared\Application\Exception\IntegrationResponseException;
@@ -34,7 +35,7 @@ final class AuthenticateHandler implements AuthenticateHandlerInterface
     public function __construct(
         private readonly KsefApi $ksefApi,
         private readonly AuthChallengeSigner $authChallengeSigner,
-        private readonly AccessTokenStore $accessTokenStore,
+        private readonly AccessTokenStoreInterface $accessTokenStore,
         private readonly KsefStatusPoller $statusPoller,
         private readonly string $ksefNip
     ) {}

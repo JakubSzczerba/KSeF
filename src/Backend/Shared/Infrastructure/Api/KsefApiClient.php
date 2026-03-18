@@ -272,10 +272,12 @@ final class KsefApiClient implements KsefApi
         try {
             $content = $response->getContent();
         } catch (ClientExceptionInterface $e) {
-            $body = $e->getResponse()->getContent(false);
+            $errorResponse = $e->getResponse();
+            $body = $errorResponse->getContent(false);
+            $httpCode = $errorResponse->getStatusCode();
             throw new ApiClientException(
                 'Błąd API podczas pobierania faktury po numerze KSeF: ' . $body,
-                0,
+                $httpCode,
                 $e
             );
         }
@@ -300,10 +302,12 @@ final class KsefApiClient implements KsefApi
         try {
             return $response->toArray();
         } catch (ClientExceptionInterface $e) {
-            $body = $e->getResponse()->getContent(false);
+            $errorResponse = $e->getResponse();
+            $body = $errorResponse->getContent(false);
+            $httpCode = $errorResponse->getStatusCode();
             throw new ApiClientException(
                 'Błąd API podczas ' . $operationName . ': ' . $body,
-                0,
+                $httpCode,
                 $e
             );
         }

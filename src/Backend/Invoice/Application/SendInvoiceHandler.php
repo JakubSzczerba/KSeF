@@ -9,8 +9,7 @@ declare(strict_types=1);
 
 namespace Ksef\Backend\Invoice\Application;
 
-use Ksef\Backend\Authentication\Application\AccessTokenStore;
-use Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface;
+use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
 use Ksef\Backend\Invoice\Application\Contract\InvoiceEncryptor;
 use Ksef\Backend\Invoice\Domain\InvoiceSubmission;
 use Ksef\Backend\Invoice\Domain\ValueObject\FormCode;
@@ -40,8 +39,7 @@ final class SendInvoiceHandler
     public function __construct(
         private readonly KsefApi $ksefApi,
         private readonly InvoiceEncryptor $invoiceEncryptor,
-        private readonly AuthenticateHandlerInterface $authenticateHandler,
-        private readonly AccessTokenStore $accessTokenStore,
+        private readonly TokenRefreshingExecutor $tokenRefreshingExecutor,
         private readonly KsefStatusPoller $statusPoller
     ) {}
 
@@ -51,7 +49,7 @@ final class SendInvoiceHandler
             throw new InvalidCommandException('Pusty XML faktury.');
         }
 
-        $accessToken = $this->accessTokenStore->get() ?? $this->authenticateHandler->execute()->accessToken;
+        $accessToken = $this->tokenRefreshingExecutor->getValidToken();
         $formCode = new FormCode($command->formSystemCode, $command->formSchemaVersion, $command->formValue);
 
         $sessionEncryptionData = $this->invoiceEncryptor->createSessionEncryptionData();

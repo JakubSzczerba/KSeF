@@ -32,6 +32,7 @@ services:
             $certificatePassword: '%ksef.certificate_password%'
 
     Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface: '@Ksef\Backend\Authentication\Application\AuthenticateHandler'
+    Ksef\Backend\Authentication\Application\Contract\AccessTokenStoreInterface: '@Ksef\Backend\Authentication\Infrastructure\Store\SessionAccessTokenStore'
 
     Ksef\Backend\Authentication\Application\AuthenticateHandler:
         arguments:

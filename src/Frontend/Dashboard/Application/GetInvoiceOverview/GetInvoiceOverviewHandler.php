@@ -9,8 +9,7 @@ declare(strict_types=1);
 
 namespace Ksef\Frontend\Dashboard\Application\GetInvoiceOverview;
 
-use Ksef\Backend\Authentication\Application\AccessTokenStore;
-use Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface;
+use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
 use Ksef\Backend\Shared\Application\Contract\KsefApi;
 use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
 use Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository;
@@ -26,8 +25,7 @@ final class GetInvoiceOverviewHandler
     public function __construct(
         private readonly SubmittedInvoiceRepository $submittedInvoiceRepository,
         private readonly KsefApi $ksefApi,
-        private readonly AccessTokenStore $accessTokenStore,
-        private readonly AuthenticateHandlerInterface $authenticateHandler
+        private readonly TokenRefreshingExecutor $tokenRefreshingExecutor
     ) {}
 
     /**
@@ -44,7 +42,7 @@ final class GetInvoiceOverviewHandler
      */
     public function provide(): array
     {
-        $accessToken = $this->accessTokenStore->get() ?? $this->authenticateHandler->execute()->accessToken;
+        $accessToken = $this->tokenRefreshingExecutor->getValidToken();
         $rows = $this->fetchRowsFromKsef($accessToken->value);
         $rows = $this->mergeWithLocalRows($rows, $accessToken->value);
 

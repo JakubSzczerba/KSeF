@@ -9,8 +9,7 @@ declare(strict_types=1);
 
 namespace Ksef\Frontend\Dashboard\UI\Action;
 
-use Ksef\Backend\Authentication\Application\AccessTokenStore;
-use Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface;
+use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
 use Ksef\Backend\Shared\Application\Contract\KsefApi;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,8 +21,7 @@ final class DownloadInvoiceXmlAction
 {
     public function __construct(
         private readonly KsefApi $ksefApi,
-        private readonly AccessTokenStore $accessTokenStore,
-        private readonly AuthenticateHandlerInterface $authenticateHandler
+        private readonly TokenRefreshingExecutor $tokenRefreshingExecutor
     ) {}
 
     #[Route(path: '/invoices/download/{ksefNumber}', name: 'frontend_invoice_download', methods: ['GET'])]
@@ -32,7 +30,7 @@ final class DownloadInvoiceXmlAction
         $ksefNumber = (string) $request->attributes->get('ksefNumber', '');
 
         try {
-            $accessToken = $this->accessTokenStore->get() ?? $this->authenticateHandler->execute()->accessToken;
+            $accessToken = $this->tokenRefreshingExecutor->getValidToken();
             $invoice = $this->ksefApi->downloadInvoiceByKsefNumber($accessToken->value, $ksefNumber);
             $fileName = $this->sanitizeFileName($ksefNumber) . '.xml';
 

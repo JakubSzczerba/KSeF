@@ -9,8 +9,7 @@ declare(strict_types=1);
 
 namespace Ksef\Frontend\Dashboard\UI\Action;
 
-use Ksef\Backend\Authentication\Application\AccessTokenStore;
-use Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface;
+use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
 use Ksef\Backend\Shared\Application\Contract\KsefApi;
 use Ksef\Frontend\Dashboard\Application\RenderInvoicePdf\RenderInvoicePdfHandler;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,8 +22,7 @@ final class DownloadInvoicePdfAction
 {
     public function __construct(
         private readonly KsefApi $ksefApi,
-        private readonly AccessTokenStore $accessTokenStore,
-        private readonly AuthenticateHandlerInterface $authenticateHandler,
+        private readonly TokenRefreshingExecutor $tokenRefreshingExecutor,
         private readonly RenderInvoicePdfHandler $renderInvoicePdfHandler
     ) {}
 
@@ -34,7 +32,7 @@ final class DownloadInvoicePdfAction
         $ksefNumber = (string) $request->attributes->get('ksefNumber', '');
 
         try {
-            $accessToken = $this->accessTokenStore->get() ?? $this->authenticateHandler->execute()->accessToken;
+            $accessToken = $this->tokenRefreshingExecutor->getValidToken();
             $invoice = $this->ksefApi->downloadInvoiceByKsefNumber($accessToken->value, $ksefNumber);
             $fileName = $this->sanitizeFileName($ksefNumber) . '.pdf';
             $pdf = $this->renderInvoicePdfHandler->render($invoice['content'], $ksefNumber);

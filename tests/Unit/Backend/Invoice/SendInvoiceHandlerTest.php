@@ -11,7 +11,7 @@ namespace Ksef\Tests\Unit\Backend\Invoice;
 
 use Ksef\Backend\Authentication\Application\AccessTokenStore;
 use Ksef\Backend\Authentication\Application\Contract\AuthenticateHandlerInterface;
-use Ksef\Backend\Shared\Application\KsefStatusPoller;
+use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
 use Ksef\Backend\Authentication\Domain\AuthenticationSession;
 use Ksef\Backend\Authentication\Domain\ValueObject\AccessToken;
 use Ksef\Backend\Authentication\Domain\ValueObject\AuthenticationReferenceNumber;
@@ -23,6 +23,7 @@ use Ksef\Backend\Invoice\Domain\EncryptedInvoice;
 use Ksef\Backend\Invoice\Domain\SessionEncryptionData;
 use Ksef\Backend\Shared\Application\Contract\KsefApi;
 use Ksef\Backend\Shared\Application\Exception\IntegrationResponseException;
+use Ksef\Backend\Shared\Application\KsefStatusPoller;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -37,6 +38,7 @@ final class SendInvoiceHandlerTest extends TestCase
 
         $tokenStore = new AccessTokenStore();
         $tokenStore->set(new AccessToken('access-token-1'));
+        $tokenRefreshingExecutor = new TokenRefreshingExecutor($tokenStore, $authHandler);
 
         $sessionEncryptionData = new SessionEncryptionData('enc-key', 'iv-b64', 'key-raw', 'iv-raw');
         $encryptedInvoice = new EncryptedInvoice('h1', 10, 'h2', 12, 'content-b64');
@@ -56,7 +58,7 @@ final class SendInvoiceHandlerTest extends TestCase
         ]);
         $api->expects(self::never())->method('getSessionStatus');
 
-        $handler = new SendInvoiceHandler($api, $encryptor, $authHandler, $tokenStore, new KsefStatusPoller(0));
+        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0));
 
         $this->expectException(IntegrationResponseException::class);
         $this->expectExceptionMessageMatches('/450.*Pole P_1 ma nieprawidłowy format\./');
@@ -73,6 +75,7 @@ final class SendInvoiceHandlerTest extends TestCase
 
         $tokenStore = new AccessTokenStore();
         $tokenStore->set(new AccessToken('access-token-1'));
+        $tokenRefreshingExecutor = new TokenRefreshingExecutor($tokenStore, $authHandler);
 
         $sessionEncryptionData = new SessionEncryptionData('enc-key', 'iv-b64', 'key-raw', 'iv-raw');
         $encryptedInvoice = new EncryptedInvoice('h1', 10, 'h2', 12, 'content-b64');
@@ -88,7 +91,7 @@ final class SendInvoiceHandlerTest extends TestCase
 
         $authHandler->expects(self::never())->method('execute');
 
-        $handler = new SendInvoiceHandler($api, $encryptor, $authHandler, $tokenStore, new KsefStatusPoller(0));
+        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0));
 
         $result = $handler->execute(new SendInvoiceCommand('<xml/>'));
 
@@ -112,6 +115,7 @@ final class SendInvoiceHandlerTest extends TestCase
                 new AuthenticationToken('auth-token-1'),
                 new AccessToken('new-access-token')
             ));
+        $tokenRefreshingExecutor = new TokenRefreshingExecutor($tokenStore, $authHandler);
 
         $sessionEncryptionData = new SessionEncryptionData('enc-key', 'iv-b64', 'key-raw', 'iv-raw');
         $encryptedInvoice = new EncryptedInvoice('h1', 10, 'h2', 12, 'content-b64');
@@ -125,7 +129,7 @@ final class SendInvoiceHandlerTest extends TestCase
         $api->expects(self::once())->method('getSessionInvoiceStatus')->willReturn(['status' => ['code' => 200]]);
         $api->expects(self::once())->method('getSessionStatus')->willReturn(['status' => ['code' => 200]]);
 
-        $handler = new SendInvoiceHandler($api, $encryptor, $authHandler, $tokenStore, new KsefStatusPoller(0));
+        $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0));
 
         $handler->execute(new SendInvoiceCommand('<xml/>'));
     }
