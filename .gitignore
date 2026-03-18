@@ -1,4 +1,8 @@
 /.idea
+/.claude
+/.codex
+/CLAUDE.md
+/AGENTS.md
 /docker-compose.yml
 ###> symfony/framework-bundle ###
 /.env.local
