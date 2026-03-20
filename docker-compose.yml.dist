@@ -12,6 +12,8 @@ services:
   php:
     build:
       context: ./docker/php
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - .:/var/www/ksef:delegated
     links:
@@ -22,6 +24,10 @@ services:
       APP_ENV: "dev"
       APP_SECRET: "your_app_secret"
       APP_HOSTNAME: "ksef.local"
+      KSEF_NIP: "your_nip"
+      KSEF_CERTIFICATE_PATH: "/var/www/ksef/config/certificates/your_cert_name.crt"
+      KSEF_CERTIFICATE_KEY_PATH: "/var/www/ksef/config/certificates/your_cert_name.key"
+      KSEF_CERTIFICATE_PASSWORD: "your_password"
   nginx:
     image: nginx:1.27-alpine
     ports:

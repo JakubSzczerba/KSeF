@@ -1,10 +1,17 @@
 /.idea
+/.claude
+/.codex
+/CLAUDE.md
+/AGENTS.md
 /docker-compose.yml
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
+/config/certificates/*.crt
+/config/certificates/*.key
+/docs/sample-invoice.xml
 /public/bundles/
 /var/
 /vendor/

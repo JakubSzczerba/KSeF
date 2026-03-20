@@ -1,0 +1,3 @@
+services:
+    Ksef\Backend\Shared\Infrastructure\Api\KsefApiClient:
+        public: true

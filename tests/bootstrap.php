@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * This file was created by Jakub Szczerba
+ * Contact: https://www.linkedin.com/in/jakub-szczerba-3492751b4/
+ */
+
 use Symfony\Component\Dotenv\Dotenv;
 
 require dirname(__DIR__).'/vendor/autoload.php';
