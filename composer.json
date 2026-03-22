@@ -6,12 +6,23 @@
     "require": {
         "php": ">=8.4",
         "ext-ctype": "*",
+        "ext-dom": "*",
         "ext-iconv": "*",
+        "chillerlan/php-qrcode": "^5.0",
+        "dompdf/dompdf": "^3.1",
+        "robrichards/xmlseclibs": "^3.1",
         "symfony/console": "8.0.*",
         "symfony/dotenv": "8.0.*",
         "symfony/flex": "^2",
+        "symfony/form": "8.0.*",
         "symfony/framework-bundle": "8.0.*",
+        "symfony/http-client": "8.0.*",
+        "symfony/monolog-bundle": "^4.0",
         "symfony/runtime": "8.0.*",
+        "symfony/security-csrf": "8.0.*",
+        "symfony/twig-bridge": "8.0.*",
+        "symfony/twig-bundle": "8.0.*",
+        "symfony/validator": "8.0.*",
         "symfony/yaml": "8.0.*"
     },
     "require-dev": {

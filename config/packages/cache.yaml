@@ -1,2 +1,6 @@
 framework:
     cache:
+        pools:
+            cache.ksef_invoice_overview:
+                adapter: cache.adapter.filesystem
+                default_lifetime: 30

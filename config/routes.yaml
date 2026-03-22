@@ -1,2 +1,3 @@
 controllers:
-    resource: routing.controllers
+    resource: ../src/Frontend/Dashboard/UI/Action/
+    type: attribute
