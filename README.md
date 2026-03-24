@@ -7,7 +7,7 @@ Symfony 8 application for sending and receiving structured invoices (FA(3)) via 
 - XAdES digital signature authentication (RSA/ECDSA + X509 certificate)
 - Invoice encryption (AES-256-CBC key wrapped with RSA OAEP SHA-256)
 - Online session management with async status polling
-- Web dashboard: invoice list, XML download, PDF preview
+- Web dashboard: sidebar navigation, topbar, invoice list, XML download, PDF preview
 - FA(3) invoice XML parsing and validation
 
 ## Tech Stack
@@ -67,6 +67,11 @@ make start
 ```
 
 Dashboard available at `http://localhost:8099`
+
+Current dashboard layout includes:
+- `Start` section with operational summary cards and recent activity
+- `Faktury` section with the current invoice table and actions
+- Navigation shell for `Kontrahenci`, `Raporty`, `Ustawienia` ready for the next phases
 
 ### 3. Run tests
 
