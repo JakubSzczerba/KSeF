@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "https://esm.sh/react@18.2.0";
+import React, { useEffect, useState } from "https://esm.sh/react@18.2.0";
 import { createRoot } from "https://esm.sh/react-dom@18.2.0/client";
 import htm from "https://esm.sh/htm@3.1.1";
 
@@ -50,12 +50,12 @@ function App() {
         return () => window.removeEventListener("resize", onResize);
     }, []);
 
-    const sortedRows = useMemo(() => [...rows], [rows]);
-
     const setAlert = (text, type = "ok") => {
         setMessage(text);
         setMessageType(type);
     };
+
+    const resolveRowKey = (row) => `${row.sessionReferenceNumber}-${row.invoiceReferenceNumber}`;
 
     const refreshRows = async () => {
         setIsBusy(true);
@@ -192,10 +192,10 @@ function App() {
                             </tr>
                         </thead>
                         <tbody>
-                            ${sortedRows.length === 0
+                            ${rows.length === 0
                                 ? html`<tr><td style=${styles.td(theme)} colSpan="8">Brak wysłanych faktur.</td></tr>`
-                                : sortedRows.map((row, index) => html`
-                                    <tr key=${index}>
+                                : rows.map((row) => html`
+                                    <tr key=${resolveRowKey(row)}>
                                         <td style=${styles.td(theme)}><strong>${row.submittedAt || "n/d"}</strong><br /><small style=${styles.small(theme)}>${row.invoiceNumber || "n/d"}</small></td>
                                         <td style=${styles.td(theme)}>${row.ksefNumber || "n/d"}</td>
                                         <td style=${styles.td(theme)}>${row.sessionReferenceNumber || "n/d"}</td>
