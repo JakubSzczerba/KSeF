@@ -1,50 +1,119 @@
-# Integracja z KseF: Krajowy System e-Faktur.
+# KSeF — Krajowy System e-Faktur
 
-## 📌 Opis projektu
+Symfony 8 application for sending and receiving structured invoices (FA(3)) via the Polish Ministry of Finance e-invoicing API (KSeF).
 
-> Wysyłanie faktur ustukturyzowanych [Fa(3)] do Ministerstwa
-> Odbieranie/Pobieranie faktur oraz zarządzanie obiegiem dokumentów
+## Features
 
-- Planowanie i zarządzanie misjami dronów,
-- Monitorowanie statusu oraz pozycji dronów w czasie rzeczywistym,
-- Integrację z infrastrukturą IoT poprzez MQTT,
-- Symulację misji dla testowania zachowania roju,
-- Eksponowanie API dla zewnętrznych systemów zarządzania.
+- XAdES digital signature authentication (RSA/ECDSA + X509 certificate)
+- Invoice encryption (AES-256-CBC key wrapped with RSA OAEP SHA-256)
+- Online session management with async status polling
+- Web dashboard: sidebar navigation, topbar, invoice list, XML download, PDF preview
+- FA(3) invoice XML parsing and validation
 
-## 🛠 Technologia
+## Tech Stack
 
-### **Backend**
-- PHP 8.5 (Symfony 8)
-- PostgreSQL 8
+| Component | Version |
+|-----------|---------|
+| PHP | 8.5 |
+| Symfony | 8 |
+| PostgreSQL | 18 |
+| PHPUnit | 12 |
+| PHPStan | level 8 |
+
+## Architecture
+
+DDD + CQRS with two bounded contexts:
+
+- **`src/Backend/`** — KSeF API integration: authentication, invoice encryption, session management, XML parsing
+- **`src/Frontend/`** — Web dashboard: ADR action classes, Twig templates, PDF generation, JSON persistence
+
+```
+src/
+├── Backend/
+│   ├── Shared/          # KsefApi interface, KsefApiClient, shared exceptions
+│   ├── Authentication/  # XAdES auth flow, AccessTokenStore
+│   ├── Invoice/         # Send invoice flow, AES/RSA encryption
+│   └── Parser/          # FA(3) XML parser and validator
+└── Frontend/
+    └── Dashboard/
+        ├── UI/Action/   # 5 ADR action classes (one per route)
+        ├── Application/ # GetInvoiceOverviewHandler, RenderInvoicePdfHandler
+        ├── Domain/      # SubmittedInvoice
+        └── Infrastructure/ # SubmittedInvoiceRepository (JSON)
+```
 
 ## Local Setup
 
-**1. Copy the `docker-compose.yml.dist` file to `docker-compose.yml`:**
-```
+### Prerequisites
+- Docker + Docker Compose
+
+### 1. Configure environment
+
+```bash
 cp docker-compose.yml.dist docker-compose.yml
 ```
-**2. Replace placeholder values in the docker-compose.yml file with your actual values:**
-- `POSTGRES_USER` with your database username
-- `POSTGRES_PASSWORD` with your database password
-- `APP_SECRET` with your application secret
-- `DATABASE_URL` with your actual database connection string
 
-**3. Start the application:**
-```
+Edit `docker-compose.yml` and set:
+- `KSEF_NIP` — your NIP (tax ID)
+- `KSEF_CERTIFICATE_PATH` — path to your X509 certificate (PEM)
+- `KSEF_CERTIFICATE_KEY_PATH` — path to your private key (PEM)
+- `KSEF_CERTIFICATE_PASSWORD` — private key password (if encrypted)
+- `APP_SECRET` — random secret string
+
+### 2. Start the application
+
+```bash
 make start
 ```
 
-**4. Compile resources:**
-```
-make migrate
+Dashboard available at `http://localhost:8099`
+
+Current dashboard layout includes:
+- `Start` section with operational summary cards and recent activity
+- `Faktury` section with the current invoice table and actions
+- Navigation shell for `Kontrahenci`, `Raporty`, `Ustawienia` ready for the next phases
+
+### 3. Run tests
+
+```bash
+make tests
+make phpstan
 ```
 
-**5. Run tests:**
-```
-make tests 
+## Web Routes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Dashboard |
+| POST | `/send` | Submit invoice (form upload or raw XML body) |
+| GET | `/invoices/rows` | Invoice list (AJAX, JSON) |
+| GET | `/invoices/download/{ksefNumber}` | Download invoice XML |
+| GET | `/invoices/download/{ksefNumber}/pdf` | Render invoice PDF |
+
+## KSeF API
+
+Base URL: `https://api-test.ksef.mf.gov.pl/v2` (test environment)
+
+Authentication flow:
+1. `POST /auth/challenge` — request challenge
+2. Sign challenge XML with XAdES + X509 certificate
+3. `POST /auth/xades-signature` — init authentication
+4. Poll `GET /auth/{referenceNumber}` until status 200
+5. `POST /auth/token/redeem` — exchange for access token
+
+## Makefile Commands
+
+```bash
+make start          # Build and start Docker services
+make tests          # Run PHPUnit test suite
+make phpstan        # PHPStan static analysis (level 8)
+make csfixer        # PHP CS Fixer dry run
+make cc             # Clear Symfony cache
+make router         # List registered routes
+make logs           # Follow Docker logs
 ```
 
 ## Contact
-* [GitHub](https://github.com/JakubSzczerba)
 
-* [LinkedIn](https://www.linkedin.com/in/jakub-szczerba-3492751b4/)
+- [GitHub](https://github.com/JakubSzczerba)
+- [LinkedIn](https://www.linkedin.com/in/jakub-szczerba-3492751b4/)

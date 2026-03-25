@@ -56,7 +56,7 @@ final class AuthenticateHandlerTest extends TestCase
             ->with('auth-token-1')
             ->willReturn(['accessToken' => ['token' => 'access-token-1']]);
 
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger = $this->createStub(LoggerInterface::class);
         $handler = new AuthenticateHandler($api, $signer, $tokenStore, new KsefStatusPoller(0), $logger, '1234567890');
 
         $session = $handler->execute();
