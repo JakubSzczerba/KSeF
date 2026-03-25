@@ -19,7 +19,7 @@ final class OpenSslInvoiceEncryptorTest extends TestCase
     #[Test]
     public function shouldEncryptAndDecryptInvoiceWithAes256Cbc(): void
     {
-        $api = $this->createMock(KsefApi::class);
+        $api = $this->createStub(KsefApi::class);
         $api->method('getPublicKeyCertificates')->willReturn([
             [
                 'usage' => ['SymmetricKeyEncryption'],

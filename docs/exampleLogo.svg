@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+    <defs>
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#0a1628;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#0d1f3c;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="sphereGrad" x1="20%" y1="10%" x2="80%" y2="90%">
+            <stop offset="0%" style="stop-color:#4fc3f7;stop-opacity:1" />
+            <stop offset="40%" style="stop-color:#1565c0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#0a1628;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="hexGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4fc3f7;stop-opacity:0.9" />
+            <stop offset="100%" style="stop-color:#1976d2;stop-opacity:0.7" />
+        </linearGradient>
+        <linearGradient id="hexGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.15" />
+            <stop offset="100%" style="stop-color:#4fc3f7;stop-opacity:0.05" />
+        </linearGradient>
+        <radialGradient id="glowGrad" cx="50%" cy="40%" r="50%">
+            <stop offset="0%" style="stop-color:#4fc3f7;stop-opacity:0.3" />
+            <stop offset="100%" style="stop-color:#4fc3f7;stop-opacity:0" />
+        </radialGradient>
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <filter id="softGlow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <clipPath id="sphereClip">
+            <circle cx="100" cy="100" r="78"/>
+        </clipPath>
+    </defs>
+
+    <!-- Background -->
+    <rect width="600" height="200" fill="#ffffff" rx="12"/>
+
+    <!-- Glow behind sphere -->
+    <circle cx="100" cy="100" r="90" fill="url(#glowGrad)"/>
+
+    <!-- Main sphere -->
+    <circle cx="100" cy="100" r="78" fill="url(#sphereGrad)" filter="url(#softGlow)"/>
+
+    <!-- Hex grid on sphere (clipped) -->
+    <g clip-path="url(#sphereClip)" opacity="0.85">
+        <!-- Row 1 -->
+        <polygon points="76,34 88,41 88,55 76,62 64,55 64,41" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.9"/>
+        <polygon points="100,20 112,27 112,41 100,48 88,41 88,27" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.7"/>
+        <polygon points="124,34 136,41 136,55 124,62 112,55 112,41" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.6"/>
+
+        <!-- Row 2 -->
+        <polygon points="52,62 64,69 64,83 52,90 40,83 40,69" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.6"/>
+        <polygon points="76,62 88,69 88,83 76,90 64,83 64,69" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="1"/>
+        <polygon points="100,48 112,55 112,69 100,76 88,69 88,55" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.8"/>
+        <polygon points="124,62 136,69 136,83 124,90 112,83 112,69" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.7"/>
+        <polygon points="148,48 160,55 160,69 148,76 136,69 136,55" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.4"/>
+
+        <!-- Row 3 -->
+        <polygon points="28,90 40,97 40,111 28,118 16,111 16,97" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.5"/>
+        <polygon points="52,90 64,97 64,111 52,118 40,111 40,97" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.8"/>
+        <polygon points="76,90 88,97 88,111 76,118 64,111 64,97" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.9"/>
+        <polygon points="100,76 112,83 112,97 100,104 88,97 88,83" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.95"/>
+        <polygon points="124,90 136,97 136,111 124,118 112,111 112,97" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.8"/>
+        <polygon points="148,76 160,83 160,97 148,104 136,97 136,83" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.5"/>
+
+        <!-- Row 4 -->
+        <polygon points="52,118 64,125 64,139 52,146 40,139 40,125" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.6"/>
+        <polygon points="76,118 88,125 88,139 76,146 64,139 64,125" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.85"/>
+        <polygon points="100,104 112,111 112,125 100,132 88,125 88,111" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.9"/>
+        <polygon points="124,118 136,125 136,139 124,146 112,139 112,125" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.7"/>
+        <polygon points="148,104 160,111 160,125 148,132 136,125 136,111" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.4"/>
+
+        <!-- Row 5 -->
+        <polygon points="76,146 88,153 88,167 76,174 64,167 64,153" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.5"/>
+        <polygon points="100,132 112,139 112,153 100,160 88,153 88,139" fill="url(#hexGrad1)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.7"/>
+        <polygon points="124,146 136,153 136,167 124,174 112,167 112,153" fill="url(#hexGrad2)" stroke="#4fc3f7" stroke-width="0.8" opacity="0.5"/>
+    </g>
+
+    <!-- Sphere border -->
+    <circle cx="100" cy="100" r="78" fill="none" stroke="#4fc3f7" stroke-width="1" opacity="0.5"/>
+
+    <!-- Orbit ring 1 -->
+    <ellipse cx="100" cy="100" rx="88" ry="22" fill="none" stroke="#4fc3f7" stroke-width="0.8" opacity="0.4" transform="rotate(-20, 100, 100)"/>
+
+    <!-- Orbit ring 2 -->
+    <ellipse cx="100" cy="100" rx="88" ry="22" fill="none" stroke="#4fc3f7" stroke-width="0.6" opacity="0.25" transform="rotate(60, 100, 100)"/>
+
+    <!-- Orbit dots -->
+    <circle cx="178" cy="88" r="3" fill="#4fc3f7" filter="url(#glow)" opacity="0.9"/>
+    <circle cx="22" cy="112" r="2" fill="#4fc3f7" opacity="0.6"/>
+    <circle cx="155" cy="50" r="2.5" fill="#4fc3f7" filter="url(#glow)" opacity="0.7"/>
+
+    <!-- Highlight on sphere -->
+    <ellipse cx="80" cy="72" rx="22" ry="14" fill="white" opacity="0.06"/>
+
+    <!-- TEXT: EXASPHERE -->
+    <text x="210" y="95" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="800" font-size="46" letter-spacing="3" fill="#0b0b0b">EXA</text>
+    <text x="210" y="95" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="800" font-size="46" letter-spacing="3" fill="url(#hexGrad1)" opacity="0">EXA</text>
+    <text x="306" y="95" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="300" font-size="46" letter-spacing="3" fill="#4fc3f7">SPHERE</text>
+    <!-- Thin accent line under tagline -->
+    <line x1="212" y1="134" x2="570" y2="134" stroke="#4fc3f7" stroke-width="0.8" opacity="0.45"/>
+
+    <!-- Small exasphere.io -->
+    <text x="212" y="160" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="500" font-size="19" letter-spacing="1.2" fill="#0d1f3c" opacity="0.95">exasphere.io</text>
+</svg>
