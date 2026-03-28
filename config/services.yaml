@@ -26,6 +26,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    Ksef\Frontend\Dashboard\Infrastructure\Command\MigrateJsonToDbCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     Ksef\Backend\Authentication\Infrastructure\Signing\XadesAuthChallengeSigner:
         arguments:
             $ksefNip: '%ksef.nip%'
