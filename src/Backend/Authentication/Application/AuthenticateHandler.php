@@ -33,21 +33,24 @@ final class AuthenticateHandler implements AuthenticateHandlerInterface
      */
     private const AUTH_TERMINAL_CODES = [200, 400, 401, 403, 500];
 
+    private readonly KsefNip $ksefNip;
+
     public function __construct(
         private readonly KsefApi $ksefApi,
         private readonly AuthChallengeSigner $authChallengeSigner,
         private readonly AccessTokenStoreInterface $accessTokenStore,
         private readonly KsefStatusPoller $statusPoller,
         private readonly LoggerInterface $logger,
-        private readonly string $ksefNip
-    ) {}
+        string $ksefNip
+    ) {
+        $this->ksefNip = new KsefNip($ksefNip);
+    }
 
     public function execute(): AuthenticationSession
     {
-        $nip = new KsefNip($this->ksefNip);
-        $this->logger->info('KSeF auth: starting authentication', ['nip' => $nip->value]);
+        $this->logger->info('KSeF auth: starting authentication', ['nip' => $this->ksefNip->value]);
 
-        $challengeData = $this->ksefApi->requestAuthChallenge($nip->value);
+        $challengeData = $this->ksefApi->requestAuthChallenge($this->ksefNip->value);
         $challenge = (string) ($challengeData['challenge'] ?? '');
         if ($challenge === '') {
             throw new IntegrationResponseException('Brak challenge w odpowiedzi API KSeF.');
