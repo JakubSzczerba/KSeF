@@ -12,7 +12,7 @@ namespace Ksef\Frontend\Dashboard\Application\GetInvoiceOverview;
 use Ksef\Backend\Authentication\Application\TokenRefreshingExecutor;
 use Ksef\Backend\Shared\Application\Contract\KsefApi;
 use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
-use Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository;
+use Ksef\Frontend\Dashboard\Application\Contract\SubmittedInvoiceRepositoryInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Throwable;
@@ -27,7 +27,7 @@ final class GetInvoiceOverviewHandler
     private const CACHE_KEY = 'ksef_invoice_overview';
 
     public function __construct(
-        private readonly SubmittedInvoiceRepository $submittedInvoiceRepository,
+        private readonly SubmittedInvoiceRepositoryInterface $submittedInvoiceRepository,
         private readonly KsefApi $ksefApi,
         private readonly TokenRefreshingExecutor $tokenRefreshingExecutor,
         private readonly CacheInterface $ksefInvoiceOverviewCache

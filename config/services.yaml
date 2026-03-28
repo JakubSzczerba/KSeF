@@ -20,6 +20,8 @@ services:
     Ksef\Backend\Authentication\Application\Contract\AuthChallengeSigner: '@Ksef\Backend\Authentication\Infrastructure\Signing\XadesAuthChallengeSigner'
     Ksef\Backend\Invoice\Application\Contract\InvoiceEncryptor: '@Ksef\Backend\Invoice\Infrastructure\Encryption\OpenSslInvoiceEncryptor'
 
+    Ksef\Frontend\Dashboard\Application\Contract\SubmittedInvoiceRepositoryInterface: '@Ksef\Frontend\Dashboard\Infrastructure\Persistence\DoctrineSubmittedInvoiceRepository'
+
     Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository:
         arguments:
             $projectDir: '%kernel.project_dir%'

@@ -16,7 +16,7 @@ use Ksef\Backend\Invoice\Application\SendInvoiceHandler;
 use Ksef\Backend\Parser\Application\Fa3StructuredInvoiceParser;
 use Ksef\Frontend\Dashboard\Application\GetInvoiceOverview\GetInvoiceOverviewHandler;
 use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
-use Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository;
+use Ksef\Frontend\Dashboard\Application\Contract\SubmittedInvoiceRepositoryInterface;
 use Ksef\Frontend\Shared\Exception\FrontendRequestException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,7 +30,7 @@ final class SendInvoiceAction
     public function __construct(
         private readonly SendInvoiceHandler $sendInvoiceHandler,
         private readonly Fa3StructuredInvoiceParser $fa3StructuredInvoiceParser,
-        private readonly SubmittedInvoiceRepository $submittedInvoiceRepository,
+        private readonly SubmittedInvoiceRepositoryInterface $submittedInvoiceRepository,
         private readonly GetInvoiceOverviewHandler $getInvoiceOverviewHandler
     ) {}
 

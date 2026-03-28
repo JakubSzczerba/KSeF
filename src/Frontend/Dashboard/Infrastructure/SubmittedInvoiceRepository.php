@@ -9,9 +9,10 @@ declare(strict_types=1);
 
 namespace Ksef\Frontend\Dashboard\Infrastructure;
 
+use Ksef\Frontend\Dashboard\Application\Contract\SubmittedInvoiceRepositoryInterface;
 use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
 
-final class SubmittedInvoiceRepository
+final class SubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInterface
 {
     private string $storagePath;
 
