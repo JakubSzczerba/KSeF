@@ -9,29 +9,29 @@ declare(strict_types=1);
 
 namespace Ksef\Frontend\Dashboard\UI\Action;
 
-use DateTimeImmutable;
-use DateTimeInterface;
+use Ksef\Backend\Invoice\Application\Dto\SendInvoiceJobStatus;
 use Ksef\Backend\Invoice\Application\SendInvoiceCommand;
-use Ksef\Backend\Invoice\Application\SendInvoiceHandler;
 use Ksef\Backend\Parser\Application\Fa3StructuredInvoiceParser;
-use Ksef\Frontend\Dashboard\Application\GetInvoiceOverview\GetInvoiceOverviewHandler;
-use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
-use Ksef\Frontend\Dashboard\Application\Contract\SubmittedInvoiceRepositoryInterface;
 use Ksef\Frontend\Shared\Exception\FrontendRequestException;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Uuid;
 use Throwable;
 
 final class SendInvoiceAction
 {
+    private const JOB_CACHE_TTL = 300;
+    private const JOB_KEY_PREFIX = 'send_invoice_job_';
+
     public function __construct(
-        private readonly SendInvoiceHandler $sendInvoiceHandler,
+        private readonly MessageBusInterface $messageBus,
         private readonly Fa3StructuredInvoiceParser $fa3StructuredInvoiceParser,
-        private readonly SubmittedInvoiceRepositoryInterface $submittedInvoiceRepository,
-        private readonly GetInvoiceOverviewHandler $getInvoiceOverviewHandler
+        private readonly CacheItemPoolInterface $cache
     ) {}
 
     #[Route(path: '/send', name: 'frontend_invoice_send', methods: ['POST'])]
@@ -41,34 +41,23 @@ final class SendInvoiceAction
             $xml = $this->resolveXmlPayload($request);
             $fa3Invoice = $this->fa3StructuredInvoiceParser->parse($xml);
 
-            $command = new SendInvoiceCommand(
+            $jobId = Uuid::v4()->toRfc4122();
+
+            $pending = $this->cache->getItem(self::JOB_KEY_PREFIX . $jobId);
+            $pending->set(new SendInvoiceJobStatus(SendInvoiceJobStatus::STATUS_PENDING));
+            $pending->expiresAfter(self::JOB_CACHE_TTL);
+            $this->cache->save($pending);
+
+            $this->messageBus->dispatch(new SendInvoiceCommand(
+                $jobId,
                 $fa3Invoice->xml,
                 $this->option($request, 'system_code', 'FA (3)'),
                 $this->option($request, 'schema_version', '1-0E'),
                 $this->option($request, 'form_value', 'FA'),
                 $request->request->getBoolean('offline_mode')
-            );
+            ));
 
-            $result = $this->sendInvoiceHandler->execute($command);
-
-            $this->submittedInvoiceRepository->add(
-                new SubmittedInvoice(
-                    $result->sessionReferenceNumber->value,
-                    $result->invoiceReferenceNumber->value,
-                    (new DateTimeImmutable())->format(DateTimeInterface::ATOM)
-                )
-            );
-
-            $this->getInvoiceOverviewHandler->invalidate();
-
-            return new JsonResponse([
-                'ok' => true,
-                'message' => sprintf(
-                    'Wysłano fakturę. SessionRef: %s, InvoiceRef: %s',
-                    $result->sessionReferenceNumber->value,
-                    $result->invoiceReferenceNumber->value
-                ),
-            ]);
+            return new JsonResponse(['ok' => true, 'jobId' => $jobId]);
         } catch (Throwable $exception) {
             return new JsonResponse([
                 'ok' => false,

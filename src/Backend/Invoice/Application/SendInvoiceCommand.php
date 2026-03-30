@@ -12,6 +12,7 @@ namespace Ksef\Backend\Invoice\Application;
 final readonly class SendInvoiceCommand
 {
     public function __construct(
+        public string $jobId,
         public string $invoiceXml,
         public string $formSystemCode = 'FA (3)',
         public string $formSchemaVersion = '1-0E',

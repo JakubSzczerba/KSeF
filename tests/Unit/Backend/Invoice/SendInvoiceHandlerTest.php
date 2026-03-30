@@ -64,7 +64,7 @@ final class SendInvoiceHandlerTest extends TestCase
         $this->expectException(IntegrationResponseException::class);
         $this->expectExceptionMessageMatches('/450.*Pole P_1 ma nieprawidłowy format\./');
 
-        $handler->execute(new SendInvoiceCommand('<xml/>'));
+        $handler->execute(new SendInvoiceCommand('test-job-id', '<xml/>'));
     }
 
     #[Test]
@@ -94,7 +94,7 @@ final class SendInvoiceHandlerTest extends TestCase
 
         $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0), $this->createStub(LoggerInterface::class));
 
-        $result = $handler->execute(new SendInvoiceCommand('<xml/>'));
+        $result = $handler->execute(new SendInvoiceCommand('test-job-id', '<xml/>'));
 
         self::assertSame('session-1', $result->sessionReferenceNumber->value);
         self::assertSame('invoice-1', $result->invoiceReferenceNumber->value);
@@ -132,6 +132,6 @@ final class SendInvoiceHandlerTest extends TestCase
 
         $handler = new SendInvoiceHandler($api, $encryptor, $tokenRefreshingExecutor, new KsefStatusPoller(0), $this->createStub(LoggerInterface::class));
 
-        $handler->execute(new SendInvoiceCommand('<xml/>'));
+        $handler->execute(new SendInvoiceCommand('test-job-id', '<xml/>'));
     }
 }

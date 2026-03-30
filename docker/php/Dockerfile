@@ -9,7 +9,7 @@ RUN apt-get update  \
     && curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer
 
-RUN pecl install xdebug && docker-php-ext-enable xdebug
+RUN pecl install xdebug redis && docker-php-ext-enable xdebug redis
 
 RUN echo "openssl_conf = openssl_init" >> /etc/ssl/openssl.cnf && \
     echo "" >> /etc/ssl/openssl.cnf && \
