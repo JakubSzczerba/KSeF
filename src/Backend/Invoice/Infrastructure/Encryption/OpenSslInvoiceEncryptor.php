@@ -152,30 +152,21 @@ final class OpenSslInvoiceEncryptor implements InvoiceEncryptor
 
     private function extractPublicKeyPem(string $publicKeyCertificatePem): string
     {
-        $descriptors = [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
-        $process = proc_open('openssl x509 -pubkey -noout', $descriptors, $pipes);
-
-        if (!is_resource($process)) {
-            throw new CryptographyException('Nie udało się uruchomić openssl x509.');
+        $cert = openssl_x509_read($publicKeyCertificatePem);
+        if (false === $cert) {
+            throw new CryptographyException('Nie udało się wczytać certyfikatu MF: ' . openssl_error_string());
         }
 
-        fwrite($pipes[0], $publicKeyCertificatePem);
-        fclose($pipes[0]);
-
-        $pubKey = stream_get_contents($pipes[1]);
-        $stderr = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        $exitCode = proc_close($process);
-
-        if ($exitCode !== 0 || !is_string($pubKey) || $pubKey === '') {
-            throw new CryptographyException('Nie udało się wyodrębnić klucza publicznego MF: ' . $stderr);
+        $pubKey = openssl_pkey_get_public($cert);
+        if (false === $pubKey) {
+            throw new CryptographyException('Nie udało się wyodrębnić klucza publicznego MF: ' . openssl_error_string());
         }
 
-        return $pubKey;
+        $details = openssl_pkey_get_details($pubKey);
+        if (false === $details || !isset($details['key'])) {
+            throw new CryptographyException('Nie udało się odczytać szczegółów klucza publicznego MF.');
+        }
+
+        return $details['key'];
     }
 }
