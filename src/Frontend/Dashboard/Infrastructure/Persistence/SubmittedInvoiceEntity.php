@@ -32,14 +32,19 @@ class SubmittedInvoiceEntity
     #[ORM\Column(name: 'submitted_at', type: 'datetimetz_immutable')]
     private DateTimeImmutable $submittedAt;
 
+    #[ORM\Column(name: 'payment_status', type: 'string', length: 20, options: ['default' => 'unpaid'])]
+    private string $paymentStatus;
+
     public function __construct(
         string $sessionRef,
         string $invoiceRef,
-        DateTimeImmutable $submittedAt
+        DateTimeImmutable $submittedAt,
+        string $paymentStatus = 'unpaid'
     ) {
         $this->sessionRef = $sessionRef;
         $this->invoiceRef = $invoiceRef;
         $this->submittedAt = $submittedAt;
+        $this->paymentStatus = $paymentStatus;
     }
 
     public function getId(): ?int
@@ -60,5 +65,10 @@ class SubmittedInvoiceEntity
     public function getSubmittedAt(): DateTimeImmutable
     {
         return $this->submittedAt;
+    }
+
+    public function getPaymentStatus(): string
+    {
+        return $this->paymentStatus;
     }
 }
