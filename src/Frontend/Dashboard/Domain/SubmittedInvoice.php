@@ -14,11 +14,12 @@ final readonly class SubmittedInvoice
     public function __construct(
         public string $sessionReferenceNumber,
         public string $invoiceReferenceNumber,
-        public string $submittedAt
+        public string $submittedAt,
+        public string $paymentStatus = 'unpaid'
     ) {}
 
     /**
-     * @return array{sessionReferenceNumber:string,invoiceReferenceNumber:string,submittedAt:string}
+     * @return array{sessionReferenceNumber:string,invoiceReferenceNumber:string,submittedAt:string,paymentStatus:string}
      */
     public function toArray(): array
     {
@@ -26,11 +27,12 @@ final readonly class SubmittedInvoice
             'sessionReferenceNumber' => $this->sessionReferenceNumber,
             'invoiceReferenceNumber' => $this->invoiceReferenceNumber,
             'submittedAt' => $this->submittedAt,
+            'paymentStatus' => $this->paymentStatus,
         ];
     }
 
     /**
-     * @param array{sessionReferenceNumber?:mixed,invoiceReferenceNumber?:mixed,submittedAt?:mixed} $data
+     * @param array{sessionReferenceNumber?:mixed,invoiceReferenceNumber?:mixed,submittedAt?:mixed,paymentStatus?:mixed} $data
      */
     public static function fromArray(array $data): ?self
     {
@@ -42,6 +44,11 @@ final readonly class SubmittedInvoice
             return null;
         }
 
-        return new self($sessionReferenceNumber, $invoiceReferenceNumber, $submittedAt);
+        return new self(
+            $sessionReferenceNumber,
+            $invoiceReferenceNumber,
+            $submittedAt,
+            isset($data['paymentStatus']) ? (string) $data['paymentStatus'] : 'unpaid'
+        );
     }
 }

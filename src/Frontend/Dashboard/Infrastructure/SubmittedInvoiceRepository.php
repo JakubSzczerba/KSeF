@@ -63,6 +63,48 @@ final class SubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInte
     }
 
     /**
+     * @return array{sentThisMonth: int, unpaidCount: int}
+     */
+    public function getStats(): array
+    {
+        $all = $this->all();
+        $currentMonth = (new \DateTimeImmutable())->format('Y-m');
+        $sentThisMonth = 0;
+        $unpaidCount = 0;
+
+        foreach ($all as $invoice) {
+            if (str_starts_with($invoice->submittedAt, $currentMonth)) {
+                $sentThisMonth++;
+            }
+            if ($invoice->paymentStatus === 'unpaid') {
+                $unpaidCount++;
+            }
+        }
+
+        return ['sentThisMonth' => $sentThisMonth, 'unpaidCount' => $unpaidCount];
+    }
+
+    /**
+     * @return array{items: list<SubmittedInvoice>, total: int}
+     */
+    public function paginate(int $page, int $limit, ?string $paymentStatus = null): array
+    {
+        $all = $this->all();
+
+        if (null !== $paymentStatus) {
+            $all = array_values(array_filter(
+                $all,
+                static fn (SubmittedInvoice $i): bool => $i->paymentStatus === $paymentStatus
+            ));
+        }
+
+        $total = count($all);
+        $items = array_slice($all, ($page - 1) * $limit, $limit);
+
+        return ['items' => $items, 'total' => $total];
+    }
+
+    /**
      * @param list<SubmittedInvoice> $entries
      */
     private function save(array $entries): void

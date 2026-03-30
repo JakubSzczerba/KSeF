@@ -13,6 +13,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Ksef\Frontend\Dashboard\Application\Contract\SubmittedInvoiceRepositoryInterface;
 use Ksef\Frontend\Dashboard\Domain\SubmittedInvoice;
+use Ksef\Frontend\Dashboard\Infrastructure\Persistence\SubmittedInvoiceEntity;
 
 final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInterface
 {
@@ -51,9 +52,80 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
             static fn (SubmittedInvoiceEntity $entity): SubmittedInvoice => new SubmittedInvoice(
                 $entity->getSessionRef(),
                 $entity->getInvoiceRef(),
-                $entity->getSubmittedAt()->format(DATE_ATOM)
+                $entity->getSubmittedAt()->format(DATE_ATOM),
+                $entity->getPaymentStatus()
             ),
             $entities
         );
+    }
+
+    /**
+     * @return array{sentThisMonth: int, unpaidCount: int}
+     */
+    public function getStats(): array
+    {
+        $now = new DateTimeImmutable();
+        $firstOfMonth = $now->modify('first day of this month')->setTime(0, 0, 0);
+
+        $qb = $this->entityManager->createQueryBuilder();
+        $sentThisMonth = (int) $qb
+            ->select('COUNT(e.id)')
+            ->from(SubmittedInvoiceEntity::class, 'e')
+            ->where('e.submittedAt >= :firstOfMonth')
+            ->setParameter('firstOfMonth', $firstOfMonth)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $qb2 = $this->entityManager->createQueryBuilder();
+        $unpaidCount = (int) $qb2
+            ->select('COUNT(e.id)')
+            ->from(SubmittedInvoiceEntity::class, 'e')
+            ->where('e.paymentStatus = :status')
+            ->setParameter('status', 'unpaid')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return [
+            'sentThisMonth' => $sentThisMonth,
+            'unpaidCount' => $unpaidCount,
+        ];
+    }
+
+    /**
+     * @return array{items: list<SubmittedInvoice>, total: int}
+     */
+    public function paginate(int $page, int $limit, ?string $paymentStatus = null): array
+    {
+        $qb = $this->entityManager->createQueryBuilder()
+            ->select('e')
+            ->from(SubmittedInvoiceEntity::class, 'e')
+            ->orderBy('e.submittedAt', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        $countQb = $this->entityManager->createQueryBuilder()
+            ->select('COUNT(e.id)')
+            ->from(SubmittedInvoiceEntity::class, 'e');
+
+        if (null !== $paymentStatus) {
+            $qb->where('e.paymentStatus = :status')->setParameter('status', $paymentStatus);
+            $countQb->where('e.paymentStatus = :status')->setParameter('status', $paymentStatus);
+        }
+
+        /** @var list<SubmittedInvoiceEntity> $entities */
+        $entities = $qb->getQuery()->getResult();
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
+
+        $items = array_map(
+            static fn (SubmittedInvoiceEntity $entity): SubmittedInvoice => new SubmittedInvoice(
+                $entity->getSessionRef(),
+                $entity->getInvoiceRef(),
+                $entity->getSubmittedAt()->format(DATE_ATOM),
+                $entity->getPaymentStatus()
+            ),
+            $entities
+        );
+
+        return ['items' => $items, 'total' => $total];
     }
 }

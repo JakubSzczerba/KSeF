@@ -19,4 +19,14 @@ interface SubmittedInvoiceRepositoryInterface
      * @return list<SubmittedInvoice>
      */
     public function all(): array;
+
+    /**
+     * @return array{sentThisMonth: int, unpaidCount: int}
+     */
+    public function getStats(): array;
+
+    /**
+     * @return array{items: list<SubmittedInvoice>, total: int}
+     */
+    public function paginate(int $page, int $limit, ?string $paymentStatus = null): array;
 }
