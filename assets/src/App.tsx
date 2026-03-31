@@ -1,30 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { Bootstrap, DashboardStats, PaginatedInvoices, SubmittedInvoice } from './types/invoice';
+import type { Theme, SectionId, NavItem, FormState } from './types/app';
 import { fetchDashboardStats } from './api/dashboard';
 import { fetchInvoices } from './api/invoices';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface FormState {
-  xmlText: string;
-  file: File | null;
-  systemCode: string;
-  schemaVersion: string;
-  formValue: string;
-  offlineMode: boolean;
-}
-
-type Theme = 'light' | 'dark';
-type SectionId = 'start' | 'invoices' | 'contractors' | 'reports' | 'settings';
-
-interface NavItem {
-  id: SectionId;
-  label: string;
-  description: string;
-  tag: 'LIVE' | 'WIP';
-}
+import { S } from './styles';
+import { Sidebar } from './components/Sidebar';
+import { SendInvoiceModal } from './components/SendInvoiceModal';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -241,35 +222,6 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
   // Render helpers
   // ---------------------------------------------------------------------------
 
-  const renderSidebar = (drawerMode: boolean) => (
-    <aside style={S.sidebar(theme, drawerMode)}>
-      <div style={S.sidebarTop}>
-        <div style={S.brandMark}>KS</div>
-        <div>
-          <div style={S.brandTitle}>KSeF Workspace</div>
-          <div style={S.brandSubtitle(theme)}>Panel operacyjny dla wysylek i obiegu faktur.</div>
-        </div>
-      </div>
-
-      <nav style={S.navList}>
-        {NAV_ITEMS.map(item => (
-          <button key={item.id} type="button" style={S.navButton(theme, activeSection === item.id)} onClick={() => openSection(item.id)}>
-            <div>
-              <div style={S.navLabel}>{item.label}</div>
-              <div style={S.navDescription(theme)}>{item.description}</div>
-            </div>
-            <span style={S.navTag(item.tag)}>{item.tag}</span>
-          </button>
-        ))}
-      </nav>
-
-      <div style={S.sidebarFooter(theme)}>
-        <div style={S.sidebarFooterTitle}>KSeF Dashboard</div>
-        <div style={S.sidebarFooterText(theme)}>Wysylka faktur, monitoring statusow i archiwum.</div>
-      </div>
-    </aside>
-  );
-
   const renderStartSection = () => (
     <section style={S.sectionStack}>
       <div style={S.hero(theme)}>
@@ -447,12 +399,14 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
 
   return (
     <div style={S.appFrame(isNarrow)}>
-      {!isNarrow && renderSidebar(false)}
+      {!isNarrow && (
+        <Sidebar theme={theme} activeSection={activeSection} navItems={NAV_ITEMS} drawerMode={false} onNavigate={openSection} />
+      )}
 
       {isNarrow && isDrawerOpen && (
         <div style={S.drawerOverlay} onClick={() => setIsDrawerOpen(false)}>
           <div style={S.drawerWrap} onClick={e => e.stopPropagation()}>
-            {renderSidebar(true)}
+            <Sidebar theme={theme} activeSection={activeSection} navItems={NAV_ITEMS} drawerMode={true} onNavigate={openSection} />
           </div>
         </div>
       )}
@@ -492,48 +446,15 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
       </main>
 
       {isModalOpen && (
-        <div style={S.overlay} onClick={() => !isBusy && setIsModalOpen(false)}>
-          <div style={S.modal(theme, isNarrow)} onClick={e => e.stopPropagation()}>
-            <div style={S.modalHeader}>
-              <div>
-                <div style={S.eyebrow(theme)}>Nowa wysylka</div>
-                <h2 style={S.modalTitle}>Wysylka faktury do KSeF</h2>
-              </div>
-              <button style={S.iconButton(theme)} type="button" onClick={() => setIsModalOpen(false)} disabled={isBusy}>Zamknij</button>
-            </div>
-            <form style={S.form} onSubmit={submitInvoice}>
-              <label style={S.label}>Plik XML</label>
-              <input style={S.input(theme)} type="file" accept=".xml,text/xml,application/xml"
-                onChange={e => setForm(p => ({ ...p, file: e.target.files?.[0] ?? null }))} />
-
-              <label style={S.label}>Tresc XML</label>
-              <textarea style={S.textarea(theme)} value={form.xmlText}
-                onChange={e => setForm(p => ({ ...p, xmlText: e.target.value }))}
-                placeholder="Wklej XML faktury FA(3)" />
-
-              <div style={S.row(isNarrow)}>
-                {(['systemCode', 'schemaVersion', 'formValue'] as const).map(field => (
-                  <div key={field}>
-                    <label style={S.label}>{field}</label>
-                    <input style={S.input(theme)} value={form[field]}
-                      onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))} />
-                  </div>
-                ))}
-              </div>
-
-              <label style={S.check}>
-                <input type="checkbox" checked={form.offlineMode}
-                  onChange={e => setForm(p => ({ ...p, offlineMode: e.target.checked }))} />
-                {' '}Uzyj offlineMode
-              </label>
-
-              <div style={S.modalActions}>
-                <button style={S.btn.ghost(theme)} type="button" onClick={() => setIsModalOpen(false)} disabled={isBusy}>Anuluj</button>
-                <button style={S.btn.primary} type="submit" disabled={isBusy}>{isBusy ? 'Wysylanie...' : 'Wyslij'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <SendInvoiceModal
+          theme={theme}
+          isNarrow={isNarrow}
+          isBusy={isBusy}
+          form={form}
+          onFormChange={patch => setForm(prev => ({ ...prev, ...patch }))}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={submitInvoice}
+        />
       )}
     </div>
   );
@@ -558,146 +479,3 @@ function MetricCard({ theme, label, value, note, accent }: {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-type CSSProperties = React.CSSProperties;
-
-const S = {
-  appFrame: (narrow: boolean): CSSProperties => ({
-    minHeight: '100vh',
-    width: 'min(1500px, calc(100% - 1.4rem))',
-    margin: '0 auto',
-    padding: narrow ? '0.7rem 0 1rem' : '1rem 0 1.2rem',
-    display: 'grid',
-    gridTemplateColumns: narrow ? '1fr' : '280px minmax(0, 1fr)',
-    gap: '0.9rem',
-  }),
-  sidebar: (theme: Theme, drawer: boolean): CSSProperties => ({
-    borderRadius: '24px',
-    padding: '1rem',
-    display: 'grid',
-    gap: '1rem',
-    alignContent: 'start',
-    minHeight: drawer ? '100%' : 'calc(100vh - 2rem)',
-    background: theme === 'light'
-      ? 'linear-gradient(180deg, rgba(255,255,255,0.95), rgba(241,247,255,0.94))'
-      : 'linear-gradient(180deg, rgba(12,19,37,0.98), rgba(16,27,49,0.95))',
-    border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #304566',
-    boxShadow: '0 22px 44px rgba(6, 12, 29, 0.22)',
-  }),
-  sidebarTop: { display: 'grid', gridTemplateColumns: '56px 1fr', gap: '0.75rem', alignItems: 'center' } as CSSProperties,
-  brandMark: { width: '56px', height: '56px', borderRadius: '18px', display: 'grid', placeItems: 'center', fontFamily: 'Sora, sans-serif', fontWeight: 800, color: '#fff', background: 'linear-gradient(135deg, #ff7a2c, #ffc04c)' } as CSSProperties,
-  brandTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '1rem' } as CSSProperties,
-  brandSubtitle: (theme: Theme): CSSProperties => ({ marginTop: '0.2rem', color: theme === 'light' ? '#4a6484' : '#95adcf', fontSize: '0.82rem', lineHeight: 1.5 }),
-  navList: { display: 'grid', gap: '0.5rem' } as CSSProperties,
-  navButton: (theme: Theme, active: boolean): CSSProperties => ({
-    width: '100%', border: active ? '1px solid rgba(255,135,42,0.55)' : theme === 'light' ? '1px solid #dde8f3' : '1px solid #2f466a',
-    borderRadius: '18px', padding: '0.8rem 0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.8rem', textAlign: 'left', cursor: 'pointer', color: theme === 'light' ? '#11243a' : '#dbe7f9',
-    background: active ? theme === 'light' ? 'linear-gradient(135deg, rgba(255,233,210,0.95), rgba(255,255,255,0.96))' : 'linear-gradient(135deg, rgba(72,47,27,0.85), rgba(30,45,72,0.96))' : theme === 'light' ? 'rgba(255,255,255,0.72)' : 'rgba(15,27,49,0.7)',
-  }),
-  navLabel: { fontWeight: 800, fontSize: '0.95rem' } as CSSProperties,
-  navDescription: (theme: Theme): CSSProperties => ({ marginTop: '0.2rem', color: theme === 'light' ? '#5b7492' : '#93aace', fontSize: '0.77rem', lineHeight: 1.45 }),
-  navTag: (tag: string): CSSProperties => ({ borderRadius: '999px', padding: '0.22rem 0.48rem', fontSize: '0.68rem', fontWeight: 800, color: tag === 'LIVE' ? '#14532d' : '#92400e', background: tag === 'LIVE' ? '#dcfce7' : '#fff1d6' }),
-  sidebarFooter: (theme: Theme): CSSProperties => ({ marginTop: 'auto', borderRadius: '18px', padding: '0.9rem', background: theme === 'light' ? '#eff5fc' : '#162640', border: theme === 'light' ? '1px solid #d9e5f1' : '1px solid #304566' }),
-  sidebarFooterTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '0.82rem' } as CSSProperties,
-  sidebarFooterText: (theme: Theme): CSSProperties => ({ marginTop: '0.3rem', color: theme === 'light' ? '#4c6787' : '#93aace', fontSize: '0.76rem', lineHeight: 1.5 }),
-  drawerOverlay: { position: 'fixed', inset: 0, zIndex: 900, background: 'rgba(4,9,22,0.58)', padding: '0.7rem', backdropFilter: 'blur(3px)' } as CSSProperties,
-  drawerWrap: { width: 'min(340px, 92vw)', height: '100%' } as CSSProperties,
-  contentShell: { display: 'grid', gap: '0.8rem', alignContent: 'start' } as CSSProperties,
-  topBar: (theme: Theme, narrow: boolean): CSSProperties => ({
-    display: 'flex', flexDirection: narrow ? 'column' : 'row', alignItems: narrow ? 'stretch' : 'center', justifyContent: 'space-between', gap: '0.8rem', borderRadius: '24px', padding: '1rem 1.05rem',
-    background: theme === 'light' ? 'linear-gradient(118deg, rgba(255,153,71,0.16), rgba(255,255,255,0.88) 46%, rgba(122,204,255,0.84))' : 'linear-gradient(118deg, rgba(255,121,49,0.26), rgba(20,32,58,0.92) 45%, rgba(59,112,186,0.84))',
-    boxShadow: '0 18px 36px rgba(5,11,30,0.22)', border: theme === 'light' ? '1px solid #e7eef8' : '1px solid #2e4062',
-  }),
-  topLeft: (narrow: boolean): CSSProperties => ({ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: narrow ? 'wrap' : 'nowrap' }),
-  topTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '1.05rem' } as CSSProperties,
-  topSubtitle: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#4d6680' : '#90aacb', fontSize: '0.8rem', marginTop: '0.15rem' }),
-  topRight: (narrow: boolean): CSSProperties => ({ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: narrow ? 'wrap' : 'nowrap' }),
-  avatar: (theme: Theme): CSSProperties => ({ display: 'flex', alignItems: 'center', gap: '0.6rem', borderRadius: '14px', padding: '0.45rem 0.75rem', background: theme === 'light' ? 'rgba(255,255,255,0.7)' : 'rgba(18,30,55,0.8)', border: theme === 'light' ? '1px solid #dce8f4' : '1px solid #2c4265' }),
-  avatarBadge: { width: '34px', height: '34px', borderRadius: '10px', display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: '0.75rem', color: '#fff', background: 'linear-gradient(135deg, #ff7a2c, #ff9f50)' } as CSSProperties,
-  avatarName: { fontWeight: 700, fontSize: '0.82rem' } as CSSProperties,
-  avatarRole: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#5a7492' : '#93aace', fontSize: '0.72rem' }),
-  breadcrumbs: (theme: Theme): CSSProperties => ({ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.82rem', padding: '0.1rem 0.2rem', color: theme === 'light' ? '#5b7492' : '#93aace' }),
-  breadcrumbMuted: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#9ab0c4' : '#5a7898' }),
-  toast: (type: string): CSSProperties => ({ padding: '0.65rem 0.95rem', borderRadius: '14px', fontSize: '0.87rem', fontWeight: 500, background: type === 'ok' ? '#dcfce7' : '#fee2e2', color: type === 'ok' ? '#14532d' : '#7f1d1d', border: type === 'ok' ? '1px solid #bbf7d0' : '1px solid #fecaca' }),
-  iconButton: (theme: Theme): CSSProperties => ({ border: theme === 'light' ? '1px solid #d5e4f1' : '1px solid #2d4568', borderRadius: '12px', padding: '0.4rem 0.7rem', cursor: 'pointer', background: theme === 'light' ? 'rgba(255,255,255,0.8)' : 'rgba(14,24,46,0.8)', color: theme === 'light' ? '#11243a' : '#dbe7f9', fontSize: '0.8rem', fontWeight: 600 }),
-  sectionStack: { display: 'grid', gap: '0.9rem' } as CSSProperties,
-  hero: (theme: Theme): CSSProperties => ({ borderRadius: '24px', padding: '1.4rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap', background: theme === 'light' ? 'rgba(255,255,255,0.78)' : 'rgba(10,18,38,0.8)', border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #304566' }),
-  eyebrow: (theme: Theme): CSSProperties => ({ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: theme === 'light' ? '#c85c0a' : '#f59d48', marginBottom: '0.4rem' }),
-  heroTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '1.5rem', margin: '0 0 0.5rem' } as CSSProperties,
-  heroText: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#4c6680' : '#90aacb', fontSize: '0.9rem', margin: 0, lineHeight: 1.6 }),
-  heroActions: (narrow: boolean): CSSProperties => ({ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center', flexShrink: 0, marginTop: narrow ? '0.5rem' : 0 }),
-  metricsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' } as CSSProperties,
-  metricCard: (theme: Theme, accent: string): CSSProperties => {
-    const colors: Record<string, [string, string, string, string]> = {
-      blue: ['#dbeafe', '#1e40af', '#eff6ff', '#1e3a8a'],
-      green: ['#dcfce7', '#166534', '#f0fdf4', '#14532d'],
-      amber: ['#fef9c3', '#92400e', '#fffbeb', '#78350f'],
-      orange: ['#ffedd5', '#9a3412', '#fff7ed', '#7c2d12'],
-    };
-    const [lightBg, lightColor, darkBg, darkColor] = colors[accent] ?? colors['blue'];
-    return { borderRadius: '20px', padding: '1rem 1.1rem', background: theme === 'light' ? lightBg : darkBg, border: `1px solid ${theme === 'light' ? lightBg : darkBg}`, color: theme === 'light' ? lightColor : darkColor };
-  },
-  metricLabel: (theme: Theme): CSSProperties => ({ fontSize: '0.77rem', fontWeight: 600, opacity: 0.75, marginBottom: '0.4rem', color: theme === 'light' ? 'inherit' : 'inherit' }),
-  metricValue: { fontFamily: 'Sora, sans-serif', fontWeight: 800, fontSize: '2rem', lineHeight: 1 } as CSSProperties,
-  metricNote: (_theme: Theme): CSSProperties => ({ fontSize: '0.73rem', marginTop: '0.35rem', opacity: 0.7, lineHeight: 1.4 }),
-  contentGrid: (narrow: boolean): CSSProperties => ({ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: '0.8rem' }),
-  panel: (theme: Theme): CSSProperties => ({ borderRadius: '20px', padding: '1rem', background: theme === 'light' ? 'rgba(255,255,255,0.82)' : 'rgba(10,19,38,0.82)', border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #2d4268' }),
-  panelHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' } as CSSProperties,
-  panelTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '0.95rem' } as CSSProperties,
-  panelMeta: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#5b7492' : '#93aace', fontSize: '0.76rem', marginTop: '0.2rem' }),
-  activityList: { display: 'grid', gap: '0.5rem' } as CSSProperties,
-  activityRow: (theme: Theme): CSSProperties => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0.7rem', borderRadius: '12px', background: theme === 'light' ? '#f4f9ff' : '#0e1a35', border: theme === 'light' ? '1px solid #e0ecf8' : '1px solid #1e3057' }),
-  activityPrimary: { fontWeight: 700, fontSize: '0.84rem', wordBreak: 'break-all' } as CSSProperties,
-  activitySecondary: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#5b7492' : '#93aace', fontSize: '0.74rem', marginTop: '0.15rem' }),
-  emptyState: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#9ab0c4' : '#5a7898', fontSize: '0.82rem', padding: '1rem 0', textAlign: 'center' }),
-  moduleList: { display: 'grid', gap: '0.5rem' } as CSSProperties,
-  moduleRow: (theme: Theme): CSSProperties => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0.7rem', borderRadius: '12px', background: theme === 'light' ? '#f4f9ff' : '#0e1a35', border: theme === 'light' ? '1px solid #e0ecf8' : '1px solid #1e3057' }),
-  paymentBadge: (status: string): CSSProperties => ({
-    borderRadius: '999px', padding: '0.2rem 0.45rem', fontSize: '0.68rem', fontWeight: 700,
-    color: status === 'paid' ? '#14532d' : status === 'overdue' ? '#7f1d1d' : '#92400e',
-    background: status === 'paid' ? '#dcfce7' : status === 'overdue' ? '#fee2e2' : '#fff1d6',
-  }),
-  sectionIntro: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' } as CSSProperties,
-  sectionTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '1.4rem', margin: '0 0 0.4rem' } as CSSProperties,
-  sectionText: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#4c6680' : '#90aacb', fontSize: '0.88rem', margin: 0, lineHeight: 1.6 }),
-  sectionActions: (narrow: boolean): CSSProperties => ({ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center', flexShrink: 0, marginTop: narrow ? '0.5rem' : 0 }),
-  inlineMetric: (theme: Theme): CSSProperties => ({ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: '12px', padding: '0.4rem 0.8rem', background: theme === 'light' ? 'rgba(255,255,255,0.7)' : 'rgba(12,22,44,0.7)', border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #2d4268', fontSize: '0.75rem', gap: '0.1rem' }),
-  tableCard: (theme: Theme): CSSProperties => ({ borderRadius: '20px', background: theme === 'light' ? 'rgba(255,255,255,0.85)' : 'rgba(10,18,38,0.85)', border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #2d4268', overflow: 'hidden' }),
-  tableHeaderBar: (narrow: boolean): CSSProperties => ({ display: 'flex', justifyContent: 'space-between', alignItems: narrow ? 'stretch' : 'center', flexDirection: narrow ? 'column' : 'row', gap: '0.6rem', padding: '0.9rem 1rem 0.7rem' }),
-  tableTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '0.95rem' } as CSSProperties,
-  tableActions: (narrow: boolean): CSSProperties => ({ display: 'flex', gap: '0.5rem', flexWrap: narrow ? 'wrap' : 'nowrap' }),
-  tableWrap: { overflowX: 'auto' } as CSSProperties,
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' } as CSSProperties,
-  th: (theme: Theme): CSSProperties => ({ padding: '0.55rem 0.8rem', textAlign: 'left', fontWeight: 700, fontSize: '0.75rem', color: theme === 'light' ? '#5b7492' : '#93aace', borderBottom: theme === 'light' ? '1px solid #dce7f3' : '1px solid #1e3057', whiteSpace: 'nowrap' }),
-  td: (theme: Theme): CSSProperties => ({ padding: '0.55rem 0.8rem', borderBottom: theme === 'light' ? '1px solid #edf3fa' : '1px solid #182b4a', verticalAlign: 'middle' }),
-  small: (theme: Theme): CSSProperties => ({ fontSize: '0.74rem', color: theme === 'light' ? '#6b8aaa' : '#7090b8', wordBreak: 'break-all' }),
-  actionRow: { display: 'flex', gap: '0.35rem' } as CSSProperties,
-  pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', padding: '0.8rem 1rem' } as CSSProperties,
-  pageInfo: (theme: Theme): CSSProperties => ({ fontSize: '0.82rem', color: theme === 'light' ? '#5b7492' : '#93aace' }),
-  placeholderCard: (theme: Theme): CSSProperties => ({ borderRadius: '20px', padding: '2rem', textAlign: 'center', background: theme === 'light' ? 'rgba(255,255,255,0.82)' : 'rgba(10,18,38,0.82)', border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #2d4268' }),
-  placeholderTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.6rem' } as CSSProperties,
-  placeholderText: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#5b7492' : '#93aace', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.2rem' }),
-  placeholderActions: (narrow: boolean): CSSProperties => ({ display: 'flex', gap: '0.6rem', justifyContent: 'center', flexWrap: narrow ? 'wrap' : 'nowrap' }),
-  overlay: { position: 'fixed', inset: 0, zIndex: 1000, display: 'grid', placeItems: 'center', background: 'rgba(4,9,22,0.6)', backdropFilter: 'blur(4px)' } as CSSProperties,
-  modal: (theme: Theme, narrow: boolean): CSSProperties => ({ width: 'min(600px, calc(100vw - 2rem))', maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto', borderRadius: '24px', padding: narrow ? '1.2rem' : '1.6rem', background: theme === 'light' ? '#fff' : '#0d1c38', border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #304566', boxShadow: '0 24px 60px rgba(4,9,22,0.5)' }),
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' } as CSSProperties,
-  modalTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '1.25rem', margin: '0.2rem 0 0' } as CSSProperties,
-  form: { display: 'grid', gap: '0.8rem' } as CSSProperties,
-  label: { fontWeight: 600, fontSize: '0.83rem' } as CSSProperties,
-  input: (theme: Theme): CSSProperties => ({ width: '100%', padding: '0.5rem 0.7rem', borderRadius: '12px', border: theme === 'light' ? '1px solid #d0e0f0' : '1px solid #2d4268', background: theme === 'light' ? '#f6faff' : '#0c1a34', color: theme === 'light' ? '#11243a' : '#dbe7f9', fontSize: '0.87rem', fontFamily: 'inherit' }),
-  textarea: (theme: Theme): CSSProperties => ({ width: '100%', minHeight: '120px', padding: '0.5rem 0.7rem', borderRadius: '12px', border: theme === 'light' ? '1px solid #d0e0f0' : '1px solid #2d4268', background: theme === 'light' ? '#f6faff' : '#0c1a34', color: theme === 'light' ? '#11243a' : '#dbe7f9', fontSize: '0.84rem', fontFamily: 'monospace', resize: 'vertical' }),
-  row: (narrow: boolean): CSSProperties => ({ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr 1fr', gap: '0.6rem' }),
-  check: { display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer' } as CSSProperties,
-  modalActions: { display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginTop: '0.4rem' } as CSSProperties,
-  btn: {
-    primary: { borderRadius: '12px', padding: '0.5rem 1rem', border: 'none', background: 'linear-gradient(135deg, #ff7a2c, #ff9f50)', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' } as CSSProperties,
-    secondary: (theme: Theme): CSSProperties => ({ borderRadius: '12px', padding: '0.5rem 0.9rem', border: theme === 'light' ? '1px solid #d5e4f1' : '1px solid #2d4568', background: theme === 'light' ? 'rgba(255,255,255,0.8)' : 'rgba(14,24,46,0.8)', color: theme === 'light' ? '#11243a' : '#dbe7f9', fontWeight: 600, fontSize: '0.83rem', cursor: 'pointer' }),
-    ghost: (theme: Theme): CSSProperties => ({ borderRadius: '12px', padding: '0.5rem 0.9rem', border: 'none', background: 'transparent', color: theme === 'light' ? '#5b7492' : '#93aace', fontWeight: 600, fontSize: '0.83rem', cursor: 'pointer' }),
-    xml: (theme: Theme): CSSProperties => ({ borderRadius: '10px', padding: '0.3rem 0.6rem', border: theme === 'light' ? '1px solid #dce7f3' : '1px solid #2d4268', background: 'transparent', color: theme === 'light' ? '#2563eb' : '#60a5fa', fontWeight: 700, fontSize: '0.74rem', cursor: 'pointer' }),
-    pdf: { borderRadius: '10px', padding: '0.3rem 0.6rem', border: 'none', background: 'linear-gradient(135deg, #ff7a2c, #ff9f50)', color: '#fff', fontWeight: 700, fontSize: '0.74rem', cursor: 'pointer' } as CSSProperties,
-  },
-};
