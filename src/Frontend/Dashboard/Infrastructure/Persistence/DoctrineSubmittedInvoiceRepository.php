@@ -91,6 +91,22 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
         ];
     }
 
+    public function updatePaymentStatus(string $invoiceRef, string $paymentStatus): bool
+    {
+        $entity = $this->entityManager
+            ->getRepository(SubmittedInvoiceEntity::class)
+            ->findOneBy(['invoiceRef' => $invoiceRef]);
+
+        if (null === $entity) {
+            return false;
+        }
+
+        $entity->setPaymentStatus($paymentStatus);
+        $this->entityManager->flush();
+
+        return true;
+    }
+
     /**
      * @return array{items: list<SubmittedInvoice>, total: int}
      */

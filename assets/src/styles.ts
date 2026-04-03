@@ -98,6 +98,12 @@ export const S = {
     color: status === 'paid' ? '#14532d' : status === 'overdue' ? '#7f1d1d' : '#92400e',
     background: status === 'paid' ? '#dcfce7' : status === 'overdue' ? '#fee2e2' : '#fff1d6',
   }),
+  paymentSelect: (status: string): CSSProperties => ({
+    borderRadius: '999px', padding: '0.2rem 0.45rem', fontSize: '0.68rem', fontWeight: 700,
+    color: status === 'paid' ? '#14532d' : status === 'overdue' ? '#7f1d1d' : '#92400e',
+    background: status === 'paid' ? '#dcfce7' : status === 'overdue' ? '#fee2e2' : '#fff1d6',
+    border: 'none', cursor: 'pointer', appearance: 'none', outline: 'none',
+  }),
   sectionIntro: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' } as CSSProperties,
   sectionTitle: { fontFamily: 'Sora, sans-serif', fontWeight: 700, fontSize: '1.4rem', margin: '0 0 0.4rem' } as CSSProperties,
   sectionText: (theme: Theme): CSSProperties => ({ color: theme === 'light' ? '#4c6680' : '#90aacb', fontSize: '0.88rem', margin: 0, lineHeight: 1.6 }),

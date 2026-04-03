@@ -71,4 +71,9 @@ class SubmittedInvoiceEntity
     {
         return $this->paymentStatus;
     }
+
+    public function setPaymentStatus(string $paymentStatus): void
+    {
+        $this->paymentStatus = $paymentStatus;
+    }
 }

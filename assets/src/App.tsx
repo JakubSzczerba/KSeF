@@ -185,6 +185,29 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
     setAlert('Timeout oczekiwania na status wysylki.', 'error');
   };
 
+  const updatePaymentStatus = async (invoiceRef: string, status: PaymentStatus) => {
+    try {
+      const res = await fetch(`/api/invoices/${encodeURIComponent(invoiceRef)}/payment-status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ status }),
+      });
+      const payload = await res.json() as { ok: boolean; message?: string };
+      if (!payload.ok) throw new Error(payload.message ?? 'Blad aktualizacji statusu.');
+      setInvoiceData(prev => prev ? {
+        ...prev,
+        items: prev.items.map(inv =>
+          inv.invoiceReferenceNumber === invoiceRef ? { ...inv, paymentStatus: status } : inv
+        ),
+      } : prev);
+      setActivityRows(prev => prev.map(inv =>
+        inv.invoiceReferenceNumber === invoiceRef ? { ...inv, paymentStatus: status } : inv
+      ));
+    } catch (err) {
+      setAlert(err instanceof Error ? err.message : 'Blad aktualizacji statusu.', 'error');
+    }
+  };
+
   const resolveDownloadEndpoint = (ksefNumber: string) =>
     `/invoices/download/${encodeURIComponent(ksefNumber)}`;
   const resolvePdfEndpoint = (ksefNumber: string) =>
@@ -339,7 +362,17 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
                       <td style={S.td(theme)}>{row.submittedAt.slice(0, 10)}</td>
                       <td style={S.td(theme)}><small style={S.small(theme)}>{row.invoiceReferenceNumber}</small></td>
                       <td style={S.td(theme)}><small style={S.small(theme)}>{row.sessionReferenceNumber}</small></td>
-                      <td style={S.td(theme)}><span style={S.paymentBadge(row.paymentStatus)}>{row.paymentStatus}</span></td>
+                      <td style={S.td(theme)}>
+                        <select
+                          style={S.paymentSelect(row.paymentStatus)}
+                          value={row.paymentStatus}
+                          onChange={e => updatePaymentStatus(row.invoiceReferenceNumber, e.target.value as PaymentStatus)}
+                        >
+                          <option value="unpaid">unpaid</option>
+                          <option value="paid">paid</option>
+                          <option value="overdue">overdue</option>
+                        </select>
+                      </td>
                       <td style={S.td(theme)}>
                         <div style={S.actionRow}>
                           <button style={S.btn.xml(theme)} type="button" disabled={isBusy}

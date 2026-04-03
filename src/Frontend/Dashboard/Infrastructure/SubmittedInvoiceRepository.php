@@ -84,6 +84,33 @@ final class SubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInte
         return ['sentThisMonth' => $sentThisMonth, 'unpaidCount' => $unpaidCount];
     }
 
+    public function updatePaymentStatus(string $invoiceRef, string $paymentStatus): bool
+    {
+        $entries = $this->all();
+        $updated = false;
+        $newEntries = [];
+
+        foreach ($entries as $entry) {
+            if ($entry->invoiceReferenceNumber === $invoiceRef) {
+                $newEntries[] = new SubmittedInvoice(
+                    $entry->sessionReferenceNumber,
+                    $entry->invoiceReferenceNumber,
+                    $entry->submittedAt,
+                    $paymentStatus
+                );
+                $updated = true;
+            } else {
+                $newEntries[] = $entry;
+            }
+        }
+
+        if ($updated) {
+            $this->save($newEntries);
+        }
+
+        return $updated;
+    }
+
     /**
      * @return array{items: list<SubmittedInvoice>, total: int}
      */

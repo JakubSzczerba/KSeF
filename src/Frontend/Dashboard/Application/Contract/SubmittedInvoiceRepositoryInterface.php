@@ -25,6 +25,8 @@ interface SubmittedInvoiceRepositoryInterface
      */
     public function getStats(): array;
 
+    public function updatePaymentStatus(string $invoiceRef, string $paymentStatus): bool;
+
     /**
      * @return array{items: list<SubmittedInvoice>, total: int}
      */
