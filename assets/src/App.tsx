@@ -261,8 +261,8 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
       <div style={S.metricsGrid}>
         <MetricCard theme={theme} label="Wyslane w tym miesiacu" value={stats?.sentThisMonth ?? '—'} note="Faktury wyslane do KSeF w biezacym miesiacu." accent="blue" />
         <MetricCard theme={theme} label="Niezaplacone" value={stats?.unpaidCount ?? '—'} note="Faktury oczekujace na platnosc." accent="amber" />
+        <MetricCard theme={theme} label="Przeterminowane" value={stats?.overdueCount ?? '—'} note="Faktury po terminie platnosci." accent="orange" />
         <MetricCard theme={theme} label="Ostatnia aktywnosc" value={activityRows.length > 0 ? activityRows[0].submittedAt.slice(0, 10) : '—'} note="Data ostatniego dokumentu." accent="green" />
-        <MetricCard theme={theme} label="Wszyskie rekordy" value={invoiceData?.total ?? stats?.sentThisMonth ?? '—'} note="Laczna liczba zapisanych wysylek." accent="orange" />
       </div>
 
       <div style={S.contentGrid(isNarrow)}>

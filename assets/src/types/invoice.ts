@@ -20,6 +20,7 @@ export interface DashboardStats {
   ok: boolean;
   sentThisMonth: number;
   unpaidCount: number;
+  overdueCount: number;
 }
 
 export interface Bootstrap {

@@ -18,7 +18,7 @@ final class GetDashboardStatsHandler
     ) {}
 
     /**
-     * @return array{sentThisMonth: int, unpaidCount: int}
+     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int}
      */
     public function provide(): array
     {

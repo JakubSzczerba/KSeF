@@ -60,7 +60,7 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
     }
 
     /**
-     * @return array{sentThisMonth: int, unpaidCount: int}
+     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int}
      */
     public function getStats(): array
     {
@@ -85,9 +85,19 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
             ->getQuery()
             ->getSingleScalarResult();
 
+        $qb3 = $this->entityManager->createQueryBuilder();
+        $overdueCount = (int) $qb3
+            ->select('COUNT(e.id)')
+            ->from(SubmittedInvoiceEntity::class, 'e')
+            ->where('e.paymentStatus = :status')
+            ->setParameter('status', 'overdue')
+            ->getQuery()
+            ->getSingleScalarResult();
+
         return [
             'sentThisMonth' => $sentThisMonth,
             'unpaidCount' => $unpaidCount,
+            'overdueCount' => $overdueCount,
         ];
     }
 
