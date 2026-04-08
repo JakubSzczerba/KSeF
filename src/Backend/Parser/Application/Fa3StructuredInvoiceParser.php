@@ -93,6 +93,7 @@ final class Fa3StructuredInvoiceParser
         }
 
         $totalAmount = $this->extractP15Amount($xpath);
+        $paymentDueDate = $this->extractPaymentDueDate($xpath);
 
         return new Fa3StructuredInvoice(
             $xml,
@@ -101,7 +102,8 @@ final class Fa3StructuredInvoiceParser
             $formSystemCode,
             $formSchemaVersion,
             $formValue,
-            $totalAmount
+            $totalAmount,
+            $paymentDueDate
         );
     }
 
@@ -126,5 +128,27 @@ final class Fa3StructuredInvoiceParser
         $value = filter_var($normalized, FILTER_VALIDATE_FLOAT);
 
         return $value === false ? null : $value;
+    }
+
+    private function extractPaymentDueDate(DOMXPath $xpath): ?\DateTimeImmutable
+    {
+        $result = $xpath->query('//*[local-name()="TerminPlatnosci"]');
+        if ($result === false || $result->count() === 0) {
+            return null;
+        }
+
+        $node = $result->item(0);
+        if (!$node instanceof \DOMNode) {
+            return null;
+        }
+
+        $raw = trim((string) $node->textContent);
+        if ($raw === '') {
+            return null;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $raw);
+
+        return $date !== false ? $date->setTime(0, 0, 0) : null;
     }
 }

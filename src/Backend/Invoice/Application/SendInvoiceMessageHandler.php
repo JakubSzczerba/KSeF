@@ -41,13 +41,17 @@ final class SendInvoiceMessageHandler
         try {
             $result = $this->sendInvoiceHandler->execute($command);
 
+            $submittedAt = new DateTimeImmutable();
+            $dueDate = $command->paymentDueDate ?? $submittedAt->modify('+30 days');
+
             $this->submittedInvoiceRepository->add(
                 new SubmittedInvoice(
                     $result->sessionReferenceNumber->value,
                     $result->invoiceReferenceNumber->value,
-                    (new DateTimeImmutable())->format(DateTimeInterface::ATOM),
+                    $submittedAt->format(DateTimeInterface::ATOM),
                     'unpaid',
-                    $command->totalAmount
+                    $command->totalAmount,
+                    $dueDate->format('Y-m-d')
                 )
             );
 

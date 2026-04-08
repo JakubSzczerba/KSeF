@@ -16,7 +16,8 @@ final readonly class SubmittedInvoice
         public string $invoiceReferenceNumber,
         public string $submittedAt,
         public string $paymentStatus = 'unpaid',
-        public ?float $amount = null
+        public ?float $amount = null,
+        public ?string $dueDate = null
     ) {}
 
     /**

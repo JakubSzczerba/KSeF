@@ -18,6 +18,7 @@ final readonly class Fa3StructuredInvoice
         public string $formSystemCode,
         public string $formSchemaVersion,
         public string $formValue,
-        public ?float $totalAmount = null
+        public ?float $totalAmount = null,
+        public ?\DateTimeImmutable $paymentDueDate = null
     ) {}
 }

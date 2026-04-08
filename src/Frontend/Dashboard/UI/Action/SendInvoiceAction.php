@@ -55,7 +55,8 @@ final class SendInvoiceAction
                 $this->option($request, 'schema_version', '1-0E'),
                 $this->option($request, 'form_value', 'FA'),
                 $request->request->getBoolean('offline_mode'),
-                $fa3Invoice->totalAmount
+                $fa3Invoice->totalAmount,
+                $fa3Invoice->paymentDueDate
             ));
 
             return new JsonResponse(['ok' => true, 'jobId' => $jobId]);

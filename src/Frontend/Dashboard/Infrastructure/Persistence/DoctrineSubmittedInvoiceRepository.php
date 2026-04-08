@@ -28,12 +28,19 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
             $submittedAt = new DateTimeImmutable();
         }
 
+        $dueDate = null;
+        if (null !== $submittedInvoice->dueDate) {
+            $parsed = \DateTimeImmutable::createFromFormat('Y-m-d', $submittedInvoice->dueDate);
+            $dueDate = $parsed !== false ? $parsed->setTime(0, 0, 0) : null;
+        }
+
         $entity = new SubmittedInvoiceEntity(
             $submittedInvoice->sessionReferenceNumber,
             $submittedInvoice->invoiceReferenceNumber,
             $submittedAt,
             $submittedInvoice->paymentStatus,
-            $submittedInvoice->amount
+            $submittedInvoice->amount,
+            $dueDate
         );
 
         $this->entityManager->persist($entity);
@@ -56,7 +63,8 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
                 $entity->getInvoiceRef(),
                 $entity->getSubmittedAt()->format(DATE_ATOM),
                 $entity->getPaymentStatus(),
-                $entity->getAmount()
+                $entity->getAmount(),
+                $entity->getDueDate()?->format('Y-m-d')
             ),
             $entities
         );
@@ -162,7 +170,8 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
                 $entity->getInvoiceRef(),
                 $entity->getSubmittedAt()->format(DATE_ATOM),
                 $entity->getPaymentStatus(),
-                $entity->getAmount()
+                $entity->getAmount(),
+                $entity->getDueDate()?->format('Y-m-d')
             ),
             $entities
         );

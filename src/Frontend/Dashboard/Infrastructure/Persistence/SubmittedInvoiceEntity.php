@@ -38,18 +38,23 @@ class SubmittedInvoiceEntity
     #[ORM\Column(name: 'amount', type: 'decimal', precision: 15, scale: 2, nullable: true)]
     private ?string $amount;
 
+    #[ORM\Column(name: 'due_date', type: 'date_immutable', nullable: true)]
+    private ?DateTimeImmutable $dueDate;
+
     public function __construct(
         string $sessionRef,
         string $invoiceRef,
         DateTimeImmutable $submittedAt,
         string $paymentStatus = 'unpaid',
-        ?float $amount = null
+        ?float $amount = null,
+        ?DateTimeImmutable $dueDate = null
     ) {
         $this->sessionRef = $sessionRef;
         $this->invoiceRef = $invoiceRef;
         $this->submittedAt = $submittedAt;
         $this->paymentStatus = $paymentStatus;
         $this->amount = null !== $amount ? (string) $amount : null;
+        $this->dueDate = $dueDate;
     }
 
     public function getId(): ?int
@@ -85,5 +90,10 @@ class SubmittedInvoiceEntity
     public function getAmount(): ?float
     {
         return null !== $this->amount ? (float) $this->amount : null;
+    }
+
+    public function getDueDate(): ?DateTimeImmutable
+    {
+        return $this->dueDate;
     }
 }

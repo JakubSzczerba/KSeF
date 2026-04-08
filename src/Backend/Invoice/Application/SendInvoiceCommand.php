@@ -18,6 +18,7 @@ final readonly class SendInvoiceCommand
         public string $formSchemaVersion = '1-0E',
         public string $formValue = 'FA',
         public bool $offlineMode = false,
-        public ?float $totalAmount = null
+        public ?float $totalAmount = null,
+        public ?\DateTimeImmutable $paymentDueDate = null
     ) {}
 }
