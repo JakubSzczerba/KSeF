@@ -31,7 +31,9 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
         $entity = new SubmittedInvoiceEntity(
             $submittedInvoice->sessionReferenceNumber,
             $submittedInvoice->invoiceReferenceNumber,
-            $submittedAt
+            $submittedAt,
+            $submittedInvoice->paymentStatus,
+            $submittedInvoice->amount
         );
 
         $this->entityManager->persist($entity);
@@ -53,14 +55,15 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
                 $entity->getSessionRef(),
                 $entity->getInvoiceRef(),
                 $entity->getSubmittedAt()->format(DATE_ATOM),
-                $entity->getPaymentStatus()
+                $entity->getPaymentStatus(),
+                $entity->getAmount()
             ),
             $entities
         );
     }
 
     /**
-     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int}
+     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int, paidRevenue: float|null}
      */
     public function getStats(): array
     {
@@ -94,10 +97,21 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
             ->getQuery()
             ->getSingleScalarResult();
 
+        $qb4 = $this->entityManager->createQueryBuilder();
+        $paidRevenueRaw = $qb4
+            ->select('SUM(e.amount)')
+            ->from(SubmittedInvoiceEntity::class, 'e')
+            ->where('e.paymentStatus = :status')
+            ->setParameter('status', 'paid')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $paidRevenue = null !== $paidRevenueRaw ? (float) $paidRevenueRaw : null;
+
         return [
             'sentThisMonth' => $sentThisMonth,
             'unpaidCount' => $unpaidCount,
             'overdueCount' => $overdueCount,
+            'paidRevenue' => $paidRevenue,
         ];
     }
 
@@ -147,7 +161,8 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
                 $entity->getSessionRef(),
                 $entity->getInvoiceRef(),
                 $entity->getSubmittedAt()->format(DATE_ATOM),
-                $entity->getPaymentStatus()
+                $entity->getPaymentStatus(),
+                $entity->getAmount()
             ),
             $entities
         );

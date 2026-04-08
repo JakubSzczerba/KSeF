@@ -17,6 +17,7 @@ final readonly class SendInvoiceCommand
         public string $formSystemCode = 'FA (3)',
         public string $formSchemaVersion = '1-0E',
         public string $formValue = 'FA',
-        public bool $offlineMode = false
+        public bool $offlineMode = false,
+        public ?float $totalAmount = null
     ) {}
 }

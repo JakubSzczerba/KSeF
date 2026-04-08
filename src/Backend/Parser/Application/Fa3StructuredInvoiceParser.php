@@ -65,6 +65,7 @@ final class Fa3StructuredInvoiceParser
         }
 
         $xpath = new DOMXPath($doc);
+        $xpath->registerNamespace('fa3', self::FA3_NAMESPACE);
         $queryResult = $xpath->query('//*[local-name()="KodFormularza"]');
         $formNode = ($queryResult !== false) ? $queryResult->item(0) : null;
         if (!$formNode instanceof \DOMElement) {
@@ -91,13 +92,39 @@ final class Fa3StructuredInvoiceParser
             );
         }
 
+        $totalAmount = $this->extractP15Amount($xpath);
+
         return new Fa3StructuredInvoice(
             $xml,
             $root->localName ?: $root->nodeName,
             $namespaceUri,
             $formSystemCode,
             $formSchemaVersion,
-            $formValue
+            $formValue,
+            $totalAmount
         );
+    }
+
+    private function extractP15Amount(DOMXPath $xpath): ?float
+    {
+        $result = $xpath->query('//*[local-name()="P_15"]');
+        if ($result === false || $result->count() === 0) {
+            return null;
+        }
+
+        $node = $result->item(0);
+        if (!$node instanceof \DOMNode) {
+            return null;
+        }
+
+        $raw = trim((string) $node->textContent);
+        if ($raw === '') {
+            return null;
+        }
+
+        $normalized = str_replace(',', '.', $raw);
+        $value = filter_var($normalized, FILTER_VALIDATE_FLOAT);
+
+        return $value === false ? null : $value;
     }
 }

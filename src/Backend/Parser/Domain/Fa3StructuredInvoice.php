@@ -17,6 +17,7 @@ final readonly class Fa3StructuredInvoice
         public ?string $namespaceUri,
         public string $formSystemCode,
         public string $formSchemaVersion,
-        public string $formValue
+        public string $formValue,
+        public ?float $totalAmount = null
     ) {}
 }

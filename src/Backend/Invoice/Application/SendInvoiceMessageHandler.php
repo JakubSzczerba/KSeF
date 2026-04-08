@@ -45,7 +45,9 @@ final class SendInvoiceMessageHandler
                 new SubmittedInvoice(
                     $result->sessionReferenceNumber->value,
                     $result->invoiceReferenceNumber->value,
-                    (new DateTimeImmutable())->format(DateTimeInterface::ATOM)
+                    (new DateTimeImmutable())->format(DateTimeInterface::ATOM),
+                    'unpaid',
+                    $command->totalAmount
                 )
             );
 

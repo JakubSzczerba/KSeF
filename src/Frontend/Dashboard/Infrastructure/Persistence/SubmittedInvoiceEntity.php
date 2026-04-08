@@ -35,16 +35,21 @@ class SubmittedInvoiceEntity
     #[ORM\Column(name: 'payment_status', type: 'string', length: 20, options: ['default' => 'unpaid'])]
     private string $paymentStatus;
 
+    #[ORM\Column(name: 'amount', type: 'decimal', precision: 15, scale: 2, nullable: true)]
+    private ?string $amount;
+
     public function __construct(
         string $sessionRef,
         string $invoiceRef,
         DateTimeImmutable $submittedAt,
-        string $paymentStatus = 'unpaid'
+        string $paymentStatus = 'unpaid',
+        ?float $amount = null
     ) {
         $this->sessionRef = $sessionRef;
         $this->invoiceRef = $invoiceRef;
         $this->submittedAt = $submittedAt;
         $this->paymentStatus = $paymentStatus;
+        $this->amount = null !== $amount ? (string) $amount : null;
     }
 
     public function getId(): ?int
@@ -75,5 +80,10 @@ class SubmittedInvoiceEntity
     public function setPaymentStatus(string $paymentStatus): void
     {
         $this->paymentStatus = $paymentStatus;
+    }
+
+    public function getAmount(): ?float
+    {
+        return null !== $this->amount ? (float) $this->amount : null;
     }
 }

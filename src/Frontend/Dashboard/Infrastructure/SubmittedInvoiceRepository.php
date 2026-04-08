@@ -63,7 +63,7 @@ final class SubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInte
     }
 
     /**
-     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int}
+     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int, paidRevenue: float|null}
      */
     public function getStats(): array
     {
@@ -72,6 +72,7 @@ final class SubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInte
         $sentThisMonth = 0;
         $unpaidCount = 0;
         $overdueCount = 0;
+        $paidRevenue = null;
 
         foreach ($all as $invoice) {
             if (str_starts_with($invoice->submittedAt, $currentMonth)) {
@@ -83,9 +84,12 @@ final class SubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInte
             if ($invoice->paymentStatus === 'overdue') {
                 $overdueCount++;
             }
+            if ($invoice->paymentStatus === 'paid' && null !== $invoice->amount) {
+                $paidRevenue = ($paidRevenue ?? 0.0) + $invoice->amount;
+            }
         }
 
-        return ['sentThisMonth' => $sentThisMonth, 'unpaidCount' => $unpaidCount, 'overdueCount' => $overdueCount];
+        return ['sentThisMonth' => $sentThisMonth, 'unpaidCount' => $unpaidCount, 'overdueCount' => $overdueCount, 'paidRevenue' => $paidRevenue];
     }
 
     public function updatePaymentStatus(string $invoiceRef, string $paymentStatus): bool

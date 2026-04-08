@@ -54,7 +54,8 @@ final class SendInvoiceAction
                 $this->option($request, 'system_code', 'FA (3)'),
                 $this->option($request, 'schema_version', '1-0E'),
                 $this->option($request, 'form_value', 'FA'),
-                $request->request->getBoolean('offline_mode')
+                $request->request->getBoolean('offline_mode'),
+                $fa3Invoice->totalAmount
             ));
 
             return new JsonResponse(['ok' => true, 'jobId' => $jobId]);

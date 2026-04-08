@@ -21,6 +21,7 @@ export interface DashboardStats {
   sentThisMonth: number;
   unpaidCount: number;
   overdueCount: number;
+  paidRevenue: number | null;
 }
 
 export interface Bootstrap {

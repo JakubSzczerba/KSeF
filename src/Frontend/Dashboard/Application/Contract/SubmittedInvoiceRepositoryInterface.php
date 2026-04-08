@@ -21,7 +21,7 @@ interface SubmittedInvoiceRepositoryInterface
     public function all(): array;
 
     /**
-     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int}
+     * @return array{sentThisMonth: int, unpaidCount: int, overdueCount: int, paidRevenue: float|null}
      */
     public function getStats(): array;
 
