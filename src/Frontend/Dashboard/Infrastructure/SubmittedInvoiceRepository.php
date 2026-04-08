@@ -139,6 +139,36 @@ final class SubmittedInvoiceRepository implements SubmittedInvoiceRepositoryInte
         return ['items' => $items, 'total' => $total];
     }
 
+    public function markOverdueByDueDate(\DateTimeImmutable $today): int
+    {
+        $all = $this->all();
+        $todayStr = $today->format('Y-m-d');
+        $updated = 0;
+        $newEntries = [];
+
+        foreach ($all as $entry) {
+            if (null !== $entry->dueDate && $entry->dueDate < $todayStr && $entry->paymentStatus === 'unpaid') {
+                $newEntries[] = new SubmittedInvoice(
+                    $entry->sessionReferenceNumber,
+                    $entry->invoiceReferenceNumber,
+                    $entry->submittedAt,
+                    'overdue',
+                    $entry->amount,
+                    $entry->dueDate
+                );
+                $updated++;
+            } else {
+                $newEntries[] = $entry;
+            }
+        }
+
+        if ($updated > 0) {
+            $this->save($newEntries);
+        }
+
+        return $updated;
+    }
+
     /**
      * @param list<SubmittedInvoice> $entries
      */

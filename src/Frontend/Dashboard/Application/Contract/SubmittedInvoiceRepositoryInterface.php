@@ -31,4 +31,6 @@ interface SubmittedInvoiceRepositoryInterface
      * @return array{items: list<SubmittedInvoice>, total: int}
      */
     public function paginate(int $page, int $limit, ?string $paymentStatus = null): array;
+
+    public function markOverdueByDueDate(\DateTimeImmutable $today): int;
 }

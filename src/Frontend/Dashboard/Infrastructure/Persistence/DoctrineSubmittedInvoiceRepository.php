@@ -178,4 +178,20 @@ final class DoctrineSubmittedInvoiceRepository implements SubmittedInvoiceReposi
 
         return ['items' => $items, 'total' => $total];
     }
+
+    public function markOverdueByDueDate(\DateTimeImmutable $today): int
+    {
+        $affected = $this->entityManager->createQueryBuilder()
+            ->update(SubmittedInvoiceEntity::class, 'e')
+            ->set('e.paymentStatus', ':overdue')
+            ->where('e.dueDate < :today')
+            ->andWhere('e.paymentStatus = :unpaid')
+            ->setParameter('overdue', 'overdue')
+            ->setParameter('today', $today->setTime(0, 0, 0))
+            ->setParameter('unpaid', 'unpaid')
+            ->getQuery()
+            ->execute();
+
+        return (int) $affected;
+    }
 }
