@@ -1,5 +1,5 @@
 export type Theme = 'light' | 'dark';
-export type SectionId = 'start' | 'invoices' | 'contractors' | 'reports' | 'settings';
+export type SectionId = 'start' | 'invoices' | 'contractors' | 'generator' | 'reports' | 'settings';
 
 export interface NavItem {
   id: SectionId;

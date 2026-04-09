@@ -9,3 +9,7 @@ contractors:
 settings:
     resource: ../src/Frontend/Settings/UI/Action/
     type: attribute
+
+invoice_generation:
+    resource: ../src/Backend/InvoiceGeneration/UI/Action/
+    type: attribute

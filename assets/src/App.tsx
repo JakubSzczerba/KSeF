@@ -8,6 +8,7 @@ import { Sidebar } from './components/Sidebar';
 import { SendInvoiceModal } from './components/SendInvoiceModal';
 import ContractorsSection from './components/ContractorsSection';
 import SettingsSection from './components/SettingsSection';
+import InvoiceGeneratorSection from './components/InvoiceGeneratorSection';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -16,7 +17,8 @@ import SettingsSection from './components/SettingsSection';
 const NAV_ITEMS: NavItem[] = [
   { id: 'start', label: 'Start', description: 'Pulpit i szybki przeglad aktywnosci', tag: 'LIVE' },
   { id: 'invoices', label: 'Faktury', description: 'Lista wysylek, statusy i pliki', tag: 'LIVE' },
-  { id: 'contractors', label: 'Kontrahenci', description: 'Baza kontrahentow i dane do faktur', tag: 'WIP' },
+  { id: 'contractors', label: 'Kontrahenci', description: 'Baza kontrahentow i dane do faktur', tag: 'LIVE' },
+  { id: 'generator', label: 'Generator faktur', description: 'Tworzenie i wysylka faktur FA(3)', tag: 'LIVE' },
   { id: 'reports', label: 'Raporty', description: 'Podsumowania i wykresy finansowe', tag: 'WIP' },
   { id: 'settings', label: 'Ustawienia', description: 'Konfiguracja firmy i KSeF', tag: 'WIP' },
 ];
@@ -424,6 +426,7 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
     if (activeSection === 'start') return renderStartSection();
     if (activeSection === 'invoices') return renderInvoicesSection();
     if (activeSection === 'contractors') return <ContractorsSection />;
+    if (activeSection === 'generator') return <InvoiceGeneratorSection />;
     if (activeSection === 'reports') return renderPlaceholder('Raporty dostaly juz miejsce w glownej nawigacji.', 'Po dodaniu statusow platnosci tu trafi widok finansowy z wykresami.');
     return <SettingsSection />;
   };
