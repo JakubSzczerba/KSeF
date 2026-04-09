@@ -6,6 +6,7 @@ import { fetchInvoices } from './api/invoices';
 import { S } from './styles';
 import { Sidebar } from './components/Sidebar';
 import { SendInvoiceModal } from './components/SendInvoiceModal';
+import ContractorsSection from './components/ContractorsSection';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -421,7 +422,7 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
   const renderActiveSection = () => {
     if (activeSection === 'start') return renderStartSection();
     if (activeSection === 'invoices') return renderInvoicesSection();
-    if (activeSection === 'contractors') return renderPlaceholder('Modul kontrahentow czeka na warstwe danych.', 'CRUD kontrahentow, autocomplete NIP i historia rozliczen.');
+    if (activeSection === 'contractors') return <ContractorsSection />;
     if (activeSection === 'reports') return renderPlaceholder('Raporty dostaly juz miejsce w glownej nawigacji.', 'Po dodaniu statusow platnosci tu trafi widok finansowy z wykresami.');
     return renderPlaceholder('Ustawienia sa gotowe na osobny modul.', 'Konfiguracja firmy, KSeF i numeracji faktur.');
   };

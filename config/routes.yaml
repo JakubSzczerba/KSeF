@@ -1,3 +1,7 @@
 controllers:
     resource: ../src/Frontend/Dashboard/UI/Action/
     type: attribute
+
+contractors:
+    resource: ../src/Frontend/Contractors/UI/Action/
+    type: attribute
