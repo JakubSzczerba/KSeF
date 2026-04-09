@@ -7,6 +7,7 @@ import { S } from './styles';
 import { Sidebar } from './components/Sidebar';
 import { SendInvoiceModal } from './components/SendInvoiceModal';
 import ContractorsSection from './components/ContractorsSection';
+import SettingsSection from './components/SettingsSection';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -424,7 +425,7 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
     if (activeSection === 'invoices') return renderInvoicesSection();
     if (activeSection === 'contractors') return <ContractorsSection />;
     if (activeSection === 'reports') return renderPlaceholder('Raporty dostaly juz miejsce w glownej nawigacji.', 'Po dodaniu statusow platnosci tu trafi widok finansowy z wykresami.');
-    return renderPlaceholder('Ustawienia sa gotowe na osobny modul.', 'Konfiguracja firmy, KSeF i numeracji faktur.');
+    return <SettingsSection />;
   };
 
   // ---------------------------------------------------------------------------

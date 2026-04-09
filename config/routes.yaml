@@ -5,3 +5,7 @@ controllers:
 contractors:
     resource: ../src/Frontend/Contractors/UI/Action/
     type: attribute
+
+settings:
+    resource: ../src/Frontend/Settings/UI/Action/
+    type: attribute

@@ -24,6 +24,8 @@ services:
 
     Ksef\Frontend\Contractors\Application\Contract\ContractorRepositoryInterface: '@Ksef\Frontend\Contractors\Infrastructure\Persistence\DoctrineContractorRepository'
 
+    Ksef\Frontend\Settings\Application\Contract\CompanySettingsRepositoryInterface: '@Ksef\Frontend\Settings\Infrastructure\Persistence\DoctrineCompanySettingsRepository'
+
     Ksef\Frontend\Dashboard\Infrastructure\SubmittedInvoiceRepository:
         arguments:
             $projectDir: '%kernel.project_dir%'
