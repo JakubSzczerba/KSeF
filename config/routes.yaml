@@ -13,3 +13,7 @@ settings:
 invoice_generation:
     resource: ../src/Backend/InvoiceGeneration/UI/Action/
     type: attribute
+
+reports:
+    resource: ../src/Frontend/Reports/UI/Action/
+    type: attribute
