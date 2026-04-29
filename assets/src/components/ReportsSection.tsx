@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { csvDownloadUrl, fetchRevenueByMonth } from '../api/reports';
 import type { MonthData } from '../api/reports';
 

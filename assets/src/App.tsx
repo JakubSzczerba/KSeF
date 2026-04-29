@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { Bootstrap, DashboardStats, PaginatedInvoices, SubmittedInvoice } from './types/invoice';
+import type { Bootstrap, DashboardStats, PaginatedInvoices, SubmittedInvoice, PaymentStatus } from './types/invoice';
 import type { Theme, SectionId, NavItem, FormState } from './types/app';
 import { fetchDashboardStats } from './api/dashboard';
 import { fetchInvoices } from './api/invoices';
@@ -403,25 +403,6 @@ export default function App({ bootstrap }: { bootstrap: Bootstrap }) {
       </section>
     );
   };
-
-  const renderPlaceholder = (title: string, text: string) => (
-    <section style={S.sectionStack}>
-      <div style={S.sectionIntro}>
-        <div>
-          <div style={S.eyebrow(theme)}>{activeNav.label}</div>
-          <h1 style={S.sectionTitle}>{title}</h1>
-          <p style={S.sectionText(theme)}>{text}</p>
-        </div>
-      </div>
-      <section style={S.placeholderCard(theme)}>
-        <div style={S.placeholderTitle}>Sekcja w przygotowaniu</div>
-        <div style={S.placeholderText(theme)}>Layout jest juz gotowy. Kolejna implementacja moze wejsc w ten modul bez przebudowy shellu aplikacji.</div>
-        <div style={S.placeholderActions(isNarrow)}>
-          <button style={S.btn.secondary(theme)} type="button" onClick={() => openSection('start')}>Wroc do Start</button>
-        </div>
-      </section>
-    </section>
-  );
 
   const renderActiveSection = () => {
     if (activeSection === 'start') return renderStartSection();

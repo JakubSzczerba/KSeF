@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getCompanySettings } from '../api/settings';
 import { findContractorByNip } from '../api/contractors';
 import { generateInvoiceXml } from '../api/invoiceGenerator';
